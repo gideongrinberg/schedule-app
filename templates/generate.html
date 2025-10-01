@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block head_includes %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        window.location.replace("{{redirect_to|safe}}")
+    })
+</script>
+{% endblock %}
+{% block body %}
+Loading, please wait...
+{% endblock %}
