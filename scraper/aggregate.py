@@ -61,6 +61,11 @@ df = df.with_columns(
         .struct.rename_fields(["start", "end"])
         .struct.with_fields(parse_time_field("start"), parse_time_field("end"))
     ),
+).with_columns(
+    pl.when(pl.col("time").struct.field("start").has_nulls() | pl.col("time").struct.field("end").has_nulls())
+    .then(pl.lit(None))
+    .otherwise(pl.col("time"))
+    .alias("time")
 )
 
 course_cols = [
@@ -71,6 +76,7 @@ course_cols = [
     "units",
     "school",
     "display_name",
+    "description"
 ]
 
 section_cols = [
@@ -82,15 +88,15 @@ section_cols = [
     "days",
     "time",
     "seats",
-    "description",
 ]
 
 assert not ((set(course_cols) | set(section_cols)) - set(df.columns))
 
 df = (
     df.group_by(*course_cols)
-    .agg(pl.struct(section_cols).alias("sections"))
+    .agg(pl.struct(section_cols).alias("sections"), pl.col("term").unique().sort().alias("terms"))
     .sort("display_name")
 )
 
 df.write_json("app/src/lib/assets/catalog.json")
+print("Wrote catalog to JSON file.")
