@@ -1,4 +1,5 @@
 import os
+import json
 import polars as pl
 
 dfs = []
@@ -61,6 +62,12 @@ df = df.with_columns(
         .struct.rename_fields(["start", "end"])
         .struct.with_fields(parse_time_field("start"), parse_time_field("end"))
     ),
+
+    (
+        pl.col("instructor")
+        .str.split(";").alias("instructor")
+        .list.eval(pl.element().str.strip_chars(" "))
+    )
 ).with_columns(
     pl.when(pl.col("time").struct.field("start").has_nulls() | pl.col("time").struct.field("end").has_nulls())
     .then(pl.lit(None))
@@ -98,5 +105,19 @@ df = (
     .sort("display_name")
 )
 
-df.write_json("app/src/lib/assets/catalog.json")
+courses = json.loads(df.write_json())
+with open("./scraper/schools.json") as f:
+    schools = json.load(f)
+
+catalog = {
+    "meta": {
+        "schools": schools,
+        "terms": df["terms"].explode().unique().sort().to_list(),
+        "instructors": df["sections"].explode().struct.field("instructor").drop_nulls().explode().unique().sort().to_list()
+    },
+    "courses": courses
+}
+
+with open("app/src/lib/catalog.json", "w") as f:
+    json.dump(catalog, f)
 print("Wrote catalog to JSON file.")

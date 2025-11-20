@@ -1,7 +1,5 @@
 <script lang="ts">
-    import Catalog from "$lib/catalog.json";
-
-    console.log(Catalog)
+    import Catalog from "$lib/catalog.ts";
 </script>
 
 <h1>Welcome to SvelteKit</h1>

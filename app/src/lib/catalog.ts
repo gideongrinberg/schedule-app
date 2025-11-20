@@ -1,5 +1,23 @@
+import rawCatalog from "$lib/catalog.json";
+
+const Catalog = rawCatalog satisfies CatalogData;
+export default Catalog;
+
 type Nullable<T> = T | null;
-type CatalogData = Course[];
+
+interface CatalogData {
+    meta: CatalogMetadata;
+    courses: Course[];
+}
+
+interface CatalogMetadata {
+    schools: {
+        [key: string]: string[]
+    };
+    terms: string[];
+    instructors: string[];
+
+}
 
 interface Course {
     course_id: Nullable<string>;
@@ -18,7 +36,7 @@ interface Section {
     section_id: string;
     section_number: string;
     term: string;
-    instructor: Nullable<string>;
+    instructor: Nullable<string[]>;
     delivery: Nullable<string>;
     days: Nullable<string[]>;
     time: Nullable<SectionTime>;
@@ -33,9 +51,4 @@ interface SectionTime {
 interface SectionSeats {
     filled: number;
     total: number;
-}
-
-declare module "$lib/catalog.json" {
-    const value: CatalogData;
-    export default value;
 }
