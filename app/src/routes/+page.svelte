@@ -6,6 +6,7 @@
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Slider } from '$lib/components/ui/slider/index.js';
 	import { cn } from '$lib/utils.js';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
@@ -21,6 +22,8 @@
 	let selectedSchool = $state<string | null>(null);
 	let selectedDepartment = $state<string | null>(null);
 	let selectedInstructors = $state<string[]>([]);
+	let creditsRange = $state<[number, number]>([0, 20]);
+	let includeVariableCredits = $state(true);
 	let openCoursesOnly = $state(false);
 
 	// State for course detail dialog
@@ -63,6 +66,21 @@
 		return Array.from(instructorSet).sort();
 	});
 
+	// Derived: min/max credits from current catalog
+	const creditsRange_min = $derived(() => {
+		const units = currentCatalog.courses
+			.map((course) => course.units)
+			.filter((u): u is number => u !== null);
+		return units.length > 0 ? Math.min(...units) : 0;
+	});
+
+	const creditsRange_max = $derived(() => {
+		const units = currentCatalog.courses
+			.map((course) => course.units)
+			.filter((u): u is number => u !== null);
+		return units.length > 0 ? Math.max(...units) : 20;
+	});
+
 	// Derived: filtered courses
 	const filteredCourses = $derived(() => {
 		let courses = currentCatalog.courses;
@@ -90,6 +108,12 @@
 				)
 			);
 		}
+
+		// Apply credits filter
+		courses = courses.filter((course) => {
+			if (course.units === null) return includeVariableCredits;
+			return course.units >= creditsRange[0] && course.units <= creditsRange[1];
+		});
 
 		// Apply open courses filter
 		if (openCoursesOnly) {
@@ -165,6 +189,13 @@
 		}
 	});
 
+	// Initialize credits range on first load
+	$effect(() => {
+		if (creditsRange[0] === 0 && creditsRange[1] === 20) {
+			creditsRange = [creditsRange_min(), creditsRange_max()];
+		}
+	});
+
 	// Track previous semester to detect changes
 	let previousSemester = $state('');
 
@@ -176,6 +207,8 @@
 			selectedDepartment = null;
 			selectedInstructors = [];
 			searchQuery = '';
+			creditsRange = [creditsRange_min(), creditsRange_max()];
+			includeVariableCredits = true;
 			openCoursesOnly = false;
 		}
 		previousSemester = selectedSemester;
@@ -449,15 +482,44 @@
 				{/if}
 			</div>
 
+			<!-- Credits Filter -->
+			<div>
+				<label class="mb-2 block text-sm font-medium">Credits</label>
+				<div class="px-2">
+					<Slider
+						type="multiple"
+						bind:value={creditsRange}
+						min={creditsRange_min()}
+						max={creditsRange_max()}
+						step={0.5}
+						class="w-full"
+					/>
+				</div>
+				<div class="mt-2 flex justify-between text-xs text-muted-foreground">
+					<span>{creditsRange[0]} units</span>
+					<span>{creditsRange[1]} units</span>
+				</div>
+				<div class="mt-3">
+					<label class="flex items-center gap-2 text-sm cursor-pointer">
+						<input
+							type="checkbox"
+							bind:checked={includeVariableCredits}
+							class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						/>
+						Include variable credit courses
+					</label>
+				</div>
+			</div>
+
 			<!-- Open Courses Only Filter -->
-			<div class="border-t pt-4">
-				<label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+			<div class="mt-2">
+				<label class="flex items-center gap-2 text-sm cursor-pointer">
 					<input
 						type="checkbox"
 						bind:checked={openCoursesOnly}
 						class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					/>
-					Open Courses Only
+					Open courses only
 				</label>
 			</div>
 		</aside>
