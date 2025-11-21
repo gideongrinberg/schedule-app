@@ -4,14 +4,13 @@
 	import { tick } from 'svelte';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Slider } from '$lib/components/ui/slider/index.js';
 	import { cn } from '$lib/utils.js';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import XIcon from '@lucide/svelte/icons/x';
-	import InfoIcon from '@lucide/svelte/icons/info';
+	import FilterIcon from '@lucide/svelte/icons/filter';
 
 	// Get available semesters from catalog
 	const semesters = Object.keys(Catalog);
@@ -26,9 +25,11 @@
 	let includeVariableCredits = $state(true);
 	let openCoursesOnly = $state(false);
 
-	// State for course detail dialog
+	// State for selected course
 	let selectedCourse = $state<Course | null>(null);
-	let dialogOpen = $state(false);
+
+	// State for mobile filter drawer
+	let mobileFiltersOpen = $state(false);
 
 	// Popover states
 	let semesterPopoverOpen = $state(false);
@@ -168,9 +169,12 @@
 		selectedDepartment = null;
 	}
 
-	function openCourseDetails(course: Course) {
+	function selectCourse(course: Course) {
 		selectedCourse = course;
-		dialogOpen = true;
+	}
+
+	function clearSelection() {
+		selectedCourse = null;
 	}
 
 	// Helper function to format time (assumes time is in minutes since midnight)
@@ -218,21 +222,55 @@
 <div class="flex h-screen flex-col">
 	<!-- Top bar with search -->
 	<div class="border-b bg-background p-4">
-		<div class="mx-auto max-w-7xl">
+		<div class="mx-auto max-w-7xl flex items-center gap-3">
+			<button
+				type="button"
+				onclick={() => (mobileFiltersOpen = !mobileFiltersOpen)}
+				class="lg:hidden rounded-md p-2 hover:bg-accent"
+				aria-label="Toggle filters"
+			>
+				<FilterIcon class="h-5 w-5" />
+			</button>
 			<input
 				type="text"
 				placeholder="Search courses by title or catalog number..."
 				bind:value={searchQuery}
-				class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				class="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			/>
 		</div>
 	</div>
 
 	<!-- Main content area -->
-	<div class="flex flex-1 overflow-hidden">
+	<div class="flex flex-1 overflow-hidden relative">
+		<!-- Mobile backdrop -->
+		{#if mobileFiltersOpen}
+			<button
+				type="button"
+				onclick={() => (mobileFiltersOpen = false)}
+				class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+				aria-label="Close filters"
+			></button>
+		{/if}
+
 		<!-- Sidebar -->
-		<aside class="w-64 border-r bg-background p-4 overflow-y-auto">
-			<h2 class="mb-4 text-lg font-semibold">Filters</h2>
+		<aside
+			class={cn(
+				"w-64 bg-background p-4 overflow-y-auto transition-transform duration-300 ease-in-out",
+				"fixed inset-y-0 left-0 z-50 border-r lg:static lg:z-0",
+				!mobileFiltersOpen && "-translate-x-full lg:translate-x-0"
+			)}
+		>
+			<div class="mb-4 flex items-center justify-between">
+				<h2 class="text-lg font-semibold">Filters</h2>
+				<button
+					type="button"
+					onclick={() => (mobileFiltersOpen = false)}
+					class="lg:hidden rounded-sm p-1 hover:bg-secondary"
+					aria-label="Close filters"
+				>
+					<XIcon class="h-5 w-5" />
+				</button>
+			</div>
 
 			<!-- Semester Filter -->
 			<div class="mb-6">
@@ -525,41 +563,37 @@
 		</aside>
 
 		<!-- Course list -->
-		<main class="flex-1 overflow-y-auto p-6">
-			<div class="mx-auto max-w-4xl">
+		<main class="flex-1 overflow-y-auto p-4 md:p-6 lg:border-r">
+			<div class="mx-auto max-w-full lg:max-w-2xl">
 				<div class="mb-4 text-sm text-muted-foreground">
 					Showing {filteredCourses().length} course{filteredCourses().length !== 1 ? 's' : ''}
 				</div>
 
 				<div class="space-y-4">
 					{#each filteredCourses() as course (course.course_id)}
-						<div class="rounded-lg border bg-card p-4 shadow-sm">
+						<button
+							type="button"
+							onclick={() => selectCourse(course)}
+							class={cn(
+								"w-full rounded-lg border bg-card p-4 shadow-sm text-left transition-colors hover:bg-accent",
+								selectedCourse?.course_id === course.course_id && "ring-2 ring-ring"
+							)}
+						>
 							<div class="mb-2 flex items-start justify-between gap-2">
 								<div class="flex-1">
-									<h3 class="text-lg font-semibold">{course.title}</h3>
+									<h3 class="text-lg font-semibold">{@html course.display_name}</h3>
 									<p class="text-sm text-muted-foreground">
-										{@html course.display_name}
 										{#if course.units}
-											<span class="ml-2">• {course.units} units</span>
+											{course.units} units
 										{/if}
 									</p>
 								</div>
-								<div class="flex items-center gap-2">
-									<span class="text-sm font-medium text-muted-foreground">{course.school}</span>
-									<button
-										type="button"
-										onclick={() => openCourseDetails(course)}
-										class="rounded-sm p-1 hover:bg-secondary"
-										aria-label="View course details"
-									>
-										<InfoIcon class="h-5 w-5 text-muted-foreground" />
-									</button>
-								</div>
+								<span class="text-sm font-medium text-muted-foreground">{course.school}</span>
 							</div>
-							{#if course.description}
+							<!-- {#if course.description}
 								<p class="text-sm text-muted-foreground">{course.description}</p>
-							{/if}
-						</div>
+							{/if} -->
+						</button>
 					{/each}
 				</div>
 
@@ -570,20 +604,33 @@
 				{/if}
 			</div>
 		</main>
-	</div>
 
-	<!-- Course Details Dialog -->
-	<Dialog.Root bind:open={dialogOpen}>
-		<Dialog.Content class="max-h-[90vh] max-w-3xl overflow-y-auto">
-			{#if selectedCourse}
-				<Dialog.Header>
-					<Dialog.Title class="text-2xl">{selectedCourse.title}</Dialog.Title>
-					<Dialog.Description>
-						{@html selectedCourse.display_name}
-					</Dialog.Description>
-				</Dialog.Header>
+		<!-- Course Details Panel -->
+		{#if selectedCourse}
+			<aside
+				class={cn(
+					"overflow-y-auto bg-background p-4 md:p-6",
+					"fixed inset-0 z-50 lg:static lg:w-[500px]"
+				)}
+			>
+				<div class="mb-4 flex items-start justify-between">
+					<div class="flex-1">
+						<h2 class="text-2xl font-semibold">{selectedCourse.title}</h2>
+						<p class="text-sm text-muted-foreground mt-1">
+							{@html selectedCourse.display_name}
+						</p>
+					</div>
+					<button
+						type="button"
+						onclick={clearSelection}
+						class="rounded-sm p-1 hover:bg-secondary"
+						aria-label="Close details"
+					>
+						<XIcon class="h-5 w-5" />
+					</button>
+				</div>
 
-				<div class="space-y-6 py-4">
+				<div class="space-y-6">
 					<!-- Course Information -->
 					<div class="space-y-2">
 						<div class="grid grid-cols-2 gap-4 text-sm">
@@ -686,7 +733,7 @@
 						</div>
 					</div>
 				</div>
-			{/if}
-		</Dialog.Content>
-	</Dialog.Root>
+			</aside>
+		{/if}
+	</div>
 </div>
