@@ -4,11 +4,13 @@
 	import { tick } from 'svelte';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import XIcon from '@lucide/svelte/icons/x';
+	import InfoIcon from '@lucide/svelte/icons/info';
 
 	// Get available semesters from catalog
 	const semesters = Object.keys(Catalog);
@@ -19,6 +21,10 @@
 	let selectedSchool = $state<string | null>(null);
 	let selectedDepartment = $state<string | null>(null);
 	let selectedInstructors = $state<string[]>([]);
+
+	// State for course detail dialog
+	let selectedCourse = $state<Course | null>(null);
+	let dialogOpen = $state(false);
 
 	// Popover states
 	let semesterPopoverOpen = $state(false);
@@ -126,6 +132,20 @@
 
 	function clearDepartment() {
 		selectedDepartment = null;
+	}
+
+	function openCourseDetails(course: Course) {
+		selectedCourse = course;
+		dialogOpen = true;
+	}
+
+	// Helper function to format time (assumes time is in minutes since midnight)
+	function formatTime(minutes: number): string {
+		const hours = Math.floor(minutes / 60);
+		const mins = minutes % 60;
+		const period = hours >= 12 ? 'PM' : 'AM';
+		const displayHours = hours % 12 || 12;
+		return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
 	}
 
 	// Watch for school changes to reset department
@@ -429,8 +449,8 @@
 				<div class="space-y-4">
 					{#each filteredCourses() as course (course.course_id)}
 						<div class="rounded-lg border bg-card p-4 shadow-sm">
-							<div class="mb-2 flex items-start justify-between">
-								<div>
+							<div class="mb-2 flex items-start justify-between gap-2">
+								<div class="flex-1">
 									<h3 class="text-lg font-semibold">{course.title}</h3>
 									<p class="text-sm text-muted-foreground">
 										{@html course.display_name}
@@ -439,7 +459,17 @@
 										{/if}
 									</p>
 								</div>
-								<span class="text-sm font-medium text-muted-foreground">{course.school}</span>
+								<div class="flex items-center gap-2">
+									<span class="text-sm font-medium text-muted-foreground">{course.school}</span>
+									<button
+										type="button"
+										onclick={() => openCourseDetails(course)}
+										class="rounded-sm p-1 hover:bg-secondary"
+										aria-label="View course details"
+									>
+										<InfoIcon class="h-5 w-5 text-muted-foreground" />
+									</button>
+								</div>
 							</div>
 							{#if course.description}
 								<p class="text-sm text-muted-foreground">{course.description}</p>
@@ -456,4 +486,122 @@
 			</div>
 		</main>
 	</div>
+
+	<!-- Course Details Dialog -->
+	<Dialog.Root bind:open={dialogOpen}>
+		<Dialog.Content class="max-h-[90vh] max-w-3xl overflow-y-auto">
+			{#if selectedCourse}
+				<Dialog.Header>
+					<Dialog.Title class="text-2xl">{selectedCourse.title}</Dialog.Title>
+					<Dialog.Description>
+						{@html selectedCourse.display_name}
+					</Dialog.Description>
+				</Dialog.Header>
+
+				<div class="space-y-6 py-4">
+					<!-- Course Information -->
+					<div class="space-y-2">
+						<div class="grid grid-cols-2 gap-4 text-sm">
+							<div>
+								<span class="font-medium">School:</span>
+								<span class="ml-2 text-muted-foreground">{selectedCourse.school}</span>
+							</div>
+							{#if selectedCourse.department}
+								<div>
+									<span class="font-medium">Department:</span>
+									<span class="ml-2 text-muted-foreground">{selectedCourse.department}</span>
+								</div>
+							{/if}
+							{#if selectedCourse.units}
+								<div>
+									<span class="font-medium">Units:</span>
+									<span class="ml-2 text-muted-foreground">{selectedCourse.units}</span>
+								</div>
+							{/if}
+							{#if selectedCourse.course_id}
+								<div>
+									<span class="font-medium">Course ID:</span>
+									<span class="ml-2 text-muted-foreground">{selectedCourse.course_id}</span>
+								</div>
+							{/if}
+						</div>
+
+						{#if selectedCourse.description}
+							<div class="pt-2">
+								<p class="font-medium">Description:</p>
+								<p class="mt-1 text-sm text-muted-foreground">{selectedCourse.description}</p>
+							</div>
+						{/if}
+					</div>
+
+					<!-- Sections -->
+					<div>
+						<h3 class="mb-3 text-lg font-semibold">
+							Sections ({selectedCourse.sections.length})
+						</h3>
+
+						<div class="space-y-3">
+							{#each selectedCourse.sections as section (section.section_id)}
+								<div class="rounded-md border bg-muted/50 p-4">
+									<div class="mb-2 flex items-start justify-between">
+										<div>
+											<span class="font-medium">Section {section.section_number}</span>
+											{#if section.term}
+												<span class="ml-2 text-sm text-muted-foreground">• {section.term}</span>
+											{/if}
+										</div>
+										{#if section.seats}
+											<span
+												class="text-sm"
+												class:text-destructive={section.seats.filled >= section.seats.total}
+												class:text-green-600={section.seats.filled < section.seats.total}
+											>
+												{section.seats.filled}/{section.seats.total} seats taken
+											</span>
+										{/if}
+									</div>
+
+									<div class="space-y-1 text-sm">
+										{#if section.instructor && section.instructor.length > 0}
+											<div>
+												<span class="font-medium">Instructor:</span>
+												<span class="ml-2 text-muted-foreground">
+													{section.instructor.join(', ')}
+												</span>
+											</div>
+										{/if}
+
+										{#if section.days && section.days.length > 0}
+											<div>
+												<span class="font-medium">Days:</span>
+												<span class="ml-2 text-muted-foreground">
+													{section.days.join(', ')}
+												</span>
+											</div>
+										{/if}
+
+										{#if section.time}
+											<div>
+												<span class="font-medium">Time:</span>
+												<span class="ml-2 text-muted-foreground">
+													{formatTime(section.time.start)} - {formatTime(section.time.end)}
+												</span>
+											</div>
+										{/if}
+
+										{#if section.delivery}
+											<div>
+												<span class="font-medium">Delivery:</span>
+												<span class="ml-2 text-muted-foreground">{section.delivery}</span>
+											</div>
+										{/if}
+									</div>
+								</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+			{/if}
+		</Dialog.Content>
+	</Dialog.Root>
 </div>
