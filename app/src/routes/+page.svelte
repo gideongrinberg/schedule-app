@@ -11,6 +11,8 @@
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import XIcon from '@lucide/svelte/icons/x';
 	import FilterIcon from '@lucide/svelte/icons/filter';
+	import FilterCombobox from '$lib/components/catalog/FilterCombobox.svelte';
+	import CourseDetails from '$lib/components/catalog/CourseDetails.svelte';
 
 	// Get available semesters from catalog
 	const semesters = Object.keys(Catalog);
@@ -31,16 +33,10 @@
 	// State for mobile filter drawer
 	let mobileFiltersOpen = $state(false);
 
-	// Popover states
-	let semesterPopoverOpen = $state(false);
-	let schoolPopoverOpen = $state(false);
-	let departmentPopoverOpen = $state(false);
+	// Popover states (for instructor filter)
 	let instructorPopoverOpen = $state(false);
 
-	// Refs for refocusing
-	let semesterTriggerRef = $state<HTMLButtonElement>(null!);
-	let schoolTriggerRef = $state<HTMLButtonElement>(null!);
-	let departmentTriggerRef = $state<HTMLButtonElement>(null!);
+	// Refs for refocusing (for instructor filter)
 	let instructorTriggerRef = $state<HTMLButtonElement>(null!);
 
 	// Derived: current catalog based on selected semester
@@ -127,21 +123,6 @@
 
 		return courses;
 	});
-
-	function closeSemesterPopover() {
-		semesterPopoverOpen = false;
-		tick().then(() => semesterTriggerRef.focus());
-	}
-
-	function closeSchoolPopover() {
-		schoolPopoverOpen = false;
-		tick().then(() => schoolTriggerRef.focus());
-	}
-
-	function closeDepartmentPopover() {
-		departmentPopoverOpen = false;
-		tick().then(() => departmentTriggerRef.focus());
-	}
 
 	function closeInstructorPopover() {
 		instructorPopoverOpen = false;
@@ -278,181 +259,41 @@
 			</div>
 
 			<!-- Semester Filter -->
-			<div class="mb-6">
-				<label class="mb-2 block text-sm font-medium">Semester</label>
-				<Popover.Root bind:open={semesterPopoverOpen}>
-					<Popover.Trigger bind:ref={semesterTriggerRef}>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								variant="outline"
-								class="w-full justify-between"
-								role="combobox"
-								aria-expanded={semesterPopoverOpen}
-							>
-								<span class="truncate">
-									{selectedSemester}
-								</span>
-								<ChevronsUpDownIcon class="ml-2 h-4 w-4 opacity-50" />
-							</Button>
-						{/snippet}
-					</Popover.Trigger>
-					<Popover.Content class="w-[240px] p-0">
-						<Command.Root>
-							<Command.Input placeholder="Search semester..." />
-							<Command.List>
-								<Command.Empty>No semester found.</Command.Empty>
-								<Command.Group>
-									{#each semesters as semester (semester)}
-										<Command.Item
-											value={semester}
-											onSelect={() => {
-												selectedSemester = semester;
-												closeSemesterPopover();
-											}}
-										>
-											<CheckIcon
-												class={cn(
-													'mr-2 h-4 w-4',
-													selectedSemester !== semester && 'text-transparent'
-												)}
-											/>
-											{semester}
-										</Command.Item>
-									{/each}
-								</Command.Group>
-							</Command.List>
-						</Command.Root>
-					</Popover.Content>
-				</Popover.Root>
-			</div>
+			<FilterCombobox
+				label="Semester"
+				value={selectedSemester}
+				items={semesters}
+				searchPlaceholder="Search semester..."
+				emptyMessage="No semester found."
+				onSelect={(semester) => (selectedSemester = semester)}
+			/>
 
 			<!-- School Filter -->
-			<div class="mb-6">
-				<label class="mb-2 block text-sm font-medium">School</label>
-				<Popover.Root bind:open={schoolPopoverOpen}>
-					<Popover.Trigger bind:ref={schoolTriggerRef}>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								variant="outline"
-								class="w-full justify-between"
-								role="combobox"
-								aria-expanded={schoolPopoverOpen}
-							>
-								<span class="truncate">
-									{selectedSchool || 'Select school...'}
-								</span>
-								{#if selectedSchool}
-									<button
-										type="button"
-										onclick={(e) => {
-											e.stopPropagation();
-											clearSchool();
-										}}
-										class="ml-2 rounded-sm opacity-50 hover:opacity-100"
-									>
-										<XIcon class="h-4 w-4" />
-									</button>
-								{:else}
-									<ChevronsUpDownIcon class="ml-2 h-4 w-4 opacity-50" />
-								{/if}
-							</Button>
-						{/snippet}
-					</Popover.Trigger>
-					<Popover.Content class="w-[240px] p-0">
-						<Command.Root>
-							<Command.Input placeholder="Search school..." />
-							<Command.List>
-								<Command.Empty>No school found.</Command.Empty>
-								<Command.Group>
-									{#each schools as school (school)}
-										<Command.Item
-											value={school}
-											onSelect={() => {
-												selectedSchool = school;
-												closeSchoolPopover();
-											}}
-										>
-											<CheckIcon
-												class={cn(
-													'mr-2 h-4 w-4',
-													selectedSchool !== school && 'text-transparent'
-												)}
-											/>
-											{school}
-										</Command.Item>
-									{/each}
-								</Command.Group>
-							</Command.List>
-						</Command.Root>
-					</Popover.Content>
-				</Popover.Root>
-			</div>
+			<FilterCombobox
+				label="School"
+				value={selectedSchool}
+				items={schools}
+				placeholder="Select school..."
+				searchPlaceholder="Search school..."
+				emptyMessage="No school found."
+				onSelect={(school) => (selectedSchool = school)}
+				clearable={true}
+				onClear={clearSchool}
+			/>
 
 			<!-- Department Filter -->
-			<div class="mb-6">
-				<label class="mb-2 block text-sm font-medium">Department</label>
-				<Popover.Root bind:open={departmentPopoverOpen}>
-					<Popover.Trigger bind:ref={departmentTriggerRef}>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								variant="outline"
-								class="w-full justify-between"
-								role="combobox"
-								aria-expanded={departmentPopoverOpen}
-								disabled={!selectedSchool}
-							>
-								<span class="truncate">
-									{selectedDepartment || 'Select department...'}
-								</span>
-								{#if selectedDepartment}
-									<button
-										type="button"
-										onclick={(e) => {
-											e.stopPropagation();
-											clearDepartment();
-										}}
-										class="ml-2 rounded-sm opacity-50 hover:opacity-100"
-									>
-										<XIcon class="h-4 w-4" />
-									</button>
-								{:else}
-									<ChevronsUpDownIcon class="ml-2 h-4 w-4 opacity-50" />
-								{/if}
-							</Button>
-						{/snippet}
-					</Popover.Trigger>
-					<Popover.Content class="w-[240px] p-0">
-						<Command.Root>
-							<Command.Input placeholder="Search department..." />
-							<Command.List>
-								<Command.Empty>No department found.</Command.Empty>
-								<Command.Group>
-									{#each availableDepartments as department (department)}
-										<Command.Item
-											value={department}
-											onSelect={() => {
-												selectedDepartment = department;
-												closeDepartmentPopover();
-											}}
-										>
-											<CheckIcon
-												class={cn(
-													'mr-2 h-4 w-4',
-													selectedDepartment !== department && 'text-transparent'
-												)}
-											/>
-											{department}
-										</Command.Item>
-									{/each}
-								</Command.Group>
-							</Command.List>
-						</Command.Root>
-					</Popover.Content>
-				</Popover.Root>
-			</div>
+			<FilterCombobox
+				label="Department"
+				value={selectedDepartment}
+				items={availableDepartments}
+				placeholder="Select department..."
+				searchPlaceholder="Search department..."
+				emptyMessage="No department found."
+				onSelect={(department) => (selectedDepartment = department)}
+				clearable={true}
+				onClear={clearDepartment}
+				disabled={!selectedSchool}
+			/>
 
 			<!-- Instructor Filter (Multi-select) -->
 			<div class="mb-6">
@@ -616,138 +457,11 @@
 				selectedCourse && "fixed inset-0 z-50 block lg:static"
 			)}
 		>
-			{#if selectedCourse}
-				<div class="mb-4 flex items-start justify-between">
-					<div class="flex-1">
-						<h2 class="text-2xl font-semibold">{selectedCourse.title}</h2>
-						<p class="text-sm text-muted-foreground mt-1">
-							{@html selectedCourse.display_name}
-						</p>
-					</div>
-					<button
-						type="button"
-						onclick={clearSelection}
-						class="rounded-sm p-1 hover:bg-secondary"
-						aria-label="Close details"
-					>
-						<XIcon class="h-5 w-5" />
-					</button>
-				</div>
-
-				<div class="space-y-6">
-					<!-- Course Information -->
-					<div class="space-y-2">
-						<div class="grid grid-cols-2 gap-4 text-sm">
-							<div>
-								<span class="font-medium">School:</span>
-								<span class="ml-2 text-muted-foreground">{selectedCourse.school}</span>
-							</div>
-							{#if selectedCourse.department}
-								<div>
-									<span class="font-medium">Department:</span>
-									<span class="ml-2 text-muted-foreground">{selectedCourse.department}</span>
-								</div>
-							{/if}
-							{#if selectedCourse.units}
-								<div>
-									<span class="font-medium">Units:</span>
-									<span class="ml-2 text-muted-foreground">{selectedCourse.units}</span>
-								</div>
-							{/if}
-							{#if selectedCourse.course_id}
-								<div>
-									<span class="font-medium">Course ID:</span>
-									<span class="ml-2 text-muted-foreground">{selectedCourse.course_id}</span>
-								</div>
-							{/if}
-						</div>
-
-						{#if selectedCourse.description}
-							<div class="pt-2">
-								<p class="font-medium">Description:</p>
-								<p class="mt-1 text-sm text-muted-foreground">{selectedCourse.description}</p>
-							</div>
-						{/if}
-					</div>
-
-					<!-- Sections -->
-					<div>
-						<h3 class="mb-3 text-lg font-semibold">
-							Sections ({selectedCourse.sections.length})
-						</h3>
-
-						<div class="space-y-3">
-							{#each selectedCourse.sections as section (section.section_id)}
-								<div class="rounded-md border bg-muted/50 p-4">
-									<div class="mb-2 flex items-start justify-between">
-										<div>
-											<span class="font-medium">Section {section.section_number}</span>
-											{#if section.term}
-												<span class="ml-2 text-sm text-muted-foreground">• {section.term}</span>
-											{/if}
-										</div>
-										{#if section.seats}
-											<span
-												class="text-sm"
-												class:text-destructive={section.seats.filled >= section.seats.total}
-												class:text-green-600={section.seats.filled < section.seats.total}
-											>
-												{section.seats.filled}/{section.seats.total} seats taken
-											</span>
-										{/if}
-									</div>
-
-									<div class="space-y-1 text-sm">
-										{#if section.instructor && section.instructor.length > 0}
-											<div>
-												<span class="font-medium">Instructor:</span>
-												<span class="ml-2 text-muted-foreground">
-													{section.instructor.join(', ')}
-												</span>
-											</div>
-										{/if}
-
-										{#if section.days && section.days.length > 0}
-											<div>
-												<span class="font-medium">Days:</span>
-												<span class="ml-2 text-muted-foreground">
-													{section.days.join(', ')}
-												</span>
-											</div>
-										{/if}
-
-										{#if section.time}
-											<div>
-												<span class="font-medium">Time:</span>
-												<span class="ml-2 text-muted-foreground">
-													{formatTime(section.time.start)} - {formatTime(section.time.end)}
-												</span>
-											</div>
-										{/if}
-
-										{#if section.delivery}
-											<div>
-												<span class="font-medium">Delivery:</span>
-												<span class="ml-2 text-muted-foreground">{section.delivery}</span>
-											</div>
-										{/if}
-									</div>
-								</div>
-							{/each}
-						</div>
-					</div>
-				</div>
-			{:else}
-				<!-- Empty state when no course selected -->
-				<div class="flex h-full items-center justify-center p-8">
-					<div class="text-center">
-						<h2 class="text-xl font-semibold text-muted-foreground">No course selected</h2>
-						<p class="mt-2 text-sm text-muted-foreground">
-							Select a course from the list to view details
-						</p>
-					</div>
-				</div>
-			{/if}
+			<CourseDetails
+				course={selectedCourse}
+				onClose={clearSelection}
+				{formatTime}
+			/>
 		</aside>
 	</div>
 </div>
