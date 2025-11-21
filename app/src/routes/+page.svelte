@@ -1,5 +1,6 @@
 <script lang="ts">
-	import Catalog from '$lib/catalog';;
+	import Catalog from '$lib/catalog';
+	import type { Course } from '$lib/catalog';
 	import { tick } from 'svelte';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
@@ -9,28 +10,41 @@
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import XIcon from '@lucide/svelte/icons/x';
 
-	const schools = Object.keys(Catalog.meta.schools);
+	// Get available semesters from catalog
+	const semesters = Object.keys(Catalog);
 
+	// State for filters
+	let selectedSemester = $state<string>(semesters[0]);
 	let searchQuery = $state('');
 	let selectedSchool = $state<string | null>(null);
 	let selectedDepartment = $state<string | null>(null);
 	let selectedInstructors = $state<string[]>([]);
 
+	// Popover states
+	let semesterPopoverOpen = $state(false);
 	let schoolPopoverOpen = $state(false);
 	let departmentPopoverOpen = $state(false);
 	let instructorPopoverOpen = $state(false);
 
+	// Refs for refocusing
+	let semesterTriggerRef = $state<HTMLButtonElement>(null!);
 	let schoolTriggerRef = $state<HTMLButtonElement>(null!);
 	let departmentTriggerRef = $state<HTMLButtonElement>(null!);
 	let instructorTriggerRef = $state<HTMLButtonElement>(null!);
 
+	// Derived: current catalog based on selected semester
+	const currentCatalog = $derived(Catalog[selectedSemester]);
+
+	// Derived: available options from current catalog
+	const schools = $derived(Object.keys(currentCatalog.meta.schools));
+
 	const availableDepartments = $derived(
-		selectedSchool ? Catalog.meta.schools[selectedSchool] || [] : []
+		selectedSchool ? currentCatalog.meta.schools[selectedSchool] || [] : []
 	);
 
 	const availableInstructors = $derived(() => {
 		const instructorSet = new Set<string>();
-		Catalog.courses.forEach((course) => {
+		currentCatalog.courses.forEach((course) => {
 			course.sections.forEach((section) => {
 				if (section.instructor) {
 					section.instructor.forEach((instructor) => {
@@ -42,8 +56,9 @@
 		return Array.from(instructorSet).sort();
 	});
 
+	// Derived: filtered courses
 	const filteredCourses = $derived(() => {
-		let courses = Catalog.courses;
+		let courses = currentCatalog.courses;
 		if (searchQuery.trim()) {
 			const query = searchQuery.toLowerCase();
 			courses = courses.filter(
@@ -71,6 +86,11 @@
 
 		return courses;
 	});
+
+	function closeSemesterPopover() {
+		semesterPopoverOpen = false;
+		tick().then(() => semesterTriggerRef.focus());
+	}
 
 	function closeSchoolPopover() {
 		schoolPopoverOpen = false;
@@ -108,10 +128,26 @@
 		selectedDepartment = null;
 	}
 
+	// Watch for school changes to reset department
 	$effect(() => {
 		if (selectedSchool && !availableDepartments.includes(selectedDepartment || '')) {
 			selectedDepartment = null;
 		}
+	});
+
+	// Track previous semester to detect changes
+	let previousSemester = $state('');
+
+	// Watch for semester changes to reset all other filters
+	$effect(() => {
+		// Only reset if semester actually changed (skip initial render)
+		if (previousSemester !== '' && selectedSemester !== previousSemester) {
+			selectedSchool = null;
+			selectedDepartment = null;
+			selectedInstructors = [];
+			searchQuery = '';
+		}
+		previousSemester = selectedSemester;
 	});
 </script>
 
@@ -133,6 +169,56 @@
 		<!-- Sidebar -->
 		<aside class="w-64 border-r bg-background p-4 overflow-y-auto">
 			<h2 class="mb-4 text-lg font-semibold">Filters</h2>
+
+			<!-- Semester Filter -->
+			<div class="mb-6">
+				<label class="mb-2 block text-sm font-medium">Semester</label>
+				<Popover.Root bind:open={semesterPopoverOpen}>
+					<Popover.Trigger bind:ref={semesterTriggerRef}>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								variant="outline"
+								class="w-full justify-between"
+								role="combobox"
+								aria-expanded={semesterPopoverOpen}
+							>
+								<span class="truncate">
+									{selectedSemester}
+								</span>
+								<ChevronsUpDownIcon class="ml-2 h-4 w-4 opacity-50" />
+							</Button>
+						{/snippet}
+					</Popover.Trigger>
+					<Popover.Content class="w-[240px] p-0">
+						<Command.Root>
+							<Command.Input placeholder="Search semester..." />
+							<Command.List>
+								<Command.Empty>No semester found.</Command.Empty>
+								<Command.Group>
+									{#each semesters as semester (semester)}
+										<Command.Item
+											value={semester}
+											onSelect={() => {
+												selectedSemester = semester;
+												closeSemesterPopover();
+											}}
+										>
+											<CheckIcon
+												class={cn(
+													'mr-2 h-4 w-4',
+													selectedSemester !== semester && 'text-transparent'
+												)}
+											/>
+											{semester}
+										</Command.Item>
+									{/each}
+								</Command.Group>
+							</Command.List>
+						</Command.Root>
+					</Popover.Content>
+				</Popover.Root>
+			</div>
 
 			<!-- School Filter -->
 			<div class="mb-6">
@@ -341,7 +427,7 @@
 				</div>
 
 				<div class="space-y-4">
-					{#each filteredCourses() as course (`${course.course_id}-${course.terms.join(',')}`)}
+					{#each filteredCourses() as course (course.course_id)}
 						<div class="rounded-lg border bg-card p-4 shadow-sm">
 							<div class="mb-2 flex items-start justify-between">
 								<div>

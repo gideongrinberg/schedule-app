@@ -1,9 +1,13 @@
 import rawCatalog from '$lib/catalog.json';
 
-const Catalog = rawCatalog as CatalogData;
+const Catalog = rawCatalog satisfies CatalogList;
 export default Catalog;
 
 type Nullable<T> = T | null;
+
+interface CatalogList {
+	[semster: string]: CatalogData
+}
 
 interface CatalogData {
 	meta: CatalogMetadata;
