@@ -1,54 +1,53 @@
-import rawCatalog from "$lib/catalog.json";
+import rawCatalog from '$lib/catalog.json';
 
-const Catalog = rawCatalog satisfies CatalogData;
+const Catalog = rawCatalog as CatalogData;
 export default Catalog;
 
 type Nullable<T> = T | null;
 
 interface CatalogData {
-    meta: CatalogMetadata;
-    courses: Course[];
+	meta: CatalogMetadata;
+	courses: Course[];
 }
 
 interface CatalogMetadata {
-    schools: {
-        [key: string]: string[]
-    };
-    terms: string[];
-    instructors: string[];
-
+	schools: {
+		[key: string]: string[];
+	};
+	terms: string[];
+	instructors: string[];
 }
 
-interface Course {
-    course_id: Nullable<string>;
-    department: Nullable<string>;
-    title: string;
-    catalog_number: string;
-    units: Nullable<number>;
-    school: string;
-    display_name: string;
-    description: Nullable<string>;
-    sections: Section[];
-    terms: string[];
+export interface Course {
+	course_id: Nullable<string>;
+	department: Nullable<string>;
+	title: string;
+	catalog_number: string;
+	units: Nullable<number>;
+	school: string;
+	display_name: string;
+	description: Nullable<string>;
+	sections: Section[];
+	terms: string[];
 }
 
 interface Section {
-    section_id: string;
-    section_number: string;
-    term: string;
-    instructor: Nullable<string[]>;
-    delivery: Nullable<string>;
-    days: Nullable<string[]>;
-    time: Nullable<SectionTime>;
-    seats: Nullable<SectionSeats>;
+	section_id: string;
+	section_number: string;
+	term: string;
+	instructor: Nullable<string[]>;
+	delivery: Nullable<string>;
+	days: Nullable<string[]>;
+	time: Nullable<SectionTime>;
+	seats: Nullable<SectionSeats>;
 }
 
 interface SectionTime {
-    start: number;
-    end: number;
+	start: number;
+	end: number;
 }
 
 interface SectionSeats {
-    filled: number;
-    total: number;
+	filled: number;
+	total: number;
 }
