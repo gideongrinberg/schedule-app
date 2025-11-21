@@ -9,5 +9,9 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<Navbar></Navbar>
-{@render children()}
+<div class="flex h-screen flex-col overflow-hidden">
+	<Navbar />
+	<div class="flex-1 overflow-hidden">
+		{@render children()}
+	</div>
+</div>

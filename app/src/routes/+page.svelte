@@ -175,7 +175,7 @@
 	});
 </script>
 
-<div class="flex h-screen flex-col">
+<div class="flex h-full flex-col">
 	<!-- Top bar with filter button -->
 	<div class="border-b bg-background p-4 lg:hidden">
 		<div class="flex items-center gap-3">
