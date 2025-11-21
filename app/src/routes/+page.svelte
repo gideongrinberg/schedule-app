@@ -21,6 +21,7 @@
 	let selectedSchool = $state<string | null>(null);
 	let selectedDepartment = $state<string | null>(null);
 	let selectedInstructors = $state<string[]>([]);
+	let openCoursesOnly = $state(false);
 
 	// State for course detail dialog
 	let selectedCourse = $state<Course | null>(null);
@@ -86,6 +87,15 @@
 			courses = courses.filter((course) =>
 				course.sections.some((section) =>
 					section.instructor?.some((instructor) => selectedInstructors.includes(instructor))
+				)
+			);
+		}
+
+		// Apply open courses filter
+		if (openCoursesOnly) {
+			courses = courses.filter((course) =>
+				course.sections.some(
+					(section) => section.seats && section.seats.filled < section.seats.total
 				)
 			);
 		}
@@ -166,6 +176,7 @@
 			selectedDepartment = null;
 			selectedInstructors = [];
 			searchQuery = '';
+			openCoursesOnly = false;
 		}
 		previousSemester = selectedSemester;
 	});
@@ -436,6 +447,18 @@
 						{/each}
 					</div>
 				{/if}
+			</div>
+
+			<!-- Open Courses Only Filter -->
+			<div class="border-t pt-4">
+				<label class="flex items-center gap-2 text-sm font-medium cursor-pointer">
+					<input
+						type="checkbox"
+						bind:checked={openCoursesOnly}
+						class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					/>
+					Open Courses Only
+				</label>
 			</div>
 		</aside>
 
