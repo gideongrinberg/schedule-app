@@ -284,6 +284,7 @@
 
 			<!-- Credits Filter -->
 			<div>
+				<!-- svelte-ignore a11y_label_has_associated_control -->
 				<label class="mb-2 block text-sm font-medium">Credits</label>
 				<div class="px-2">
 					<Slider
