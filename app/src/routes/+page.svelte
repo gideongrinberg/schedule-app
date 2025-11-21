@@ -1,21 +1,15 @@
 <script lang="ts">
 	import Catalog from '$lib/catalog';
 	import type { Course } from '$lib/catalog';
-	import { tick } from 'svelte';
-	import * as Command from '$lib/components/ui/command/index.js';
-	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Slider } from '$lib/components/ui/slider/index.js';
 	import { cn } from '$lib/utils.js';
-	import CheckIcon from '@lucide/svelte/icons/check';
-	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import XIcon from '@lucide/svelte/icons/x';
 	import FilterIcon from '@lucide/svelte/icons/filter';
 	import FilterCombobox from '$lib/components/catalog/FilterCombobox.svelte';
+	import MultiSelectCombobox from '$lib/components/catalog/MultiSelectCombobox.svelte';
 	import CourseDetails from '$lib/components/catalog/CourseDetails.svelte';
 	import CourseCard from '$lib/components/catalog/CourseCard.svelte';
 
-	// Get available semesters from catalog
 	const semesters = Object.keys(Catalog);
 
 	// State for filters
@@ -28,22 +22,11 @@
 	let includeVariableCredits = $state(true);
 	let openCoursesOnly = $state(false);
 
-	// State for selected course
+	let mobileFiltersOpen = $state(false);
 	let selectedCourse = $state<Course | null>(null);
 
-	// State for mobile filter drawer
-	let mobileFiltersOpen = $state(false);
-
-	// Popover states (for instructor filter)
-	let instructorPopoverOpen = $state(false);
-
-	// Refs for refocusing (for instructor filter)
-	let instructorTriggerRef = $state<HTMLButtonElement>(null!);
-
-	// Derived: current catalog based on selected semester
+	// Derived catalog/filter values
 	const currentCatalog = $derived(Catalog[selectedSemester]);
-
-	// Derived: available options from current catalog
 	const schools = $derived(Object.keys(currentCatalog.meta.schools));
 
 	const availableDepartments = $derived(
@@ -64,7 +47,7 @@
 		return Array.from(instructorSet).sort();
 	});
 
-	// Derived: min/max credits from current catalog
+	// Get minimum and maximum credit ranges for current catalog
 	const creditsRange_min = $derived(() => {
 		const units = currentCatalog.courses
 			.map((course) => course.units)
@@ -79,7 +62,7 @@
 		return units.length > 0 ? Math.max(...units) : 20;
 	});
 
-	// Derived: filtered courses
+	// Derive the full list of courses based on current filters.
 	const filteredCourses = $derived(() => {
 		let courses = currentCatalog.courses;
 		if (searchQuery.trim()) {
@@ -125,11 +108,6 @@
 		return courses;
 	});
 
-	function closeInstructorPopover() {
-		instructorPopoverOpen = false;
-		tick().then(() => instructorTriggerRef.focus());
-	}
-
 	function toggleInstructor(instructor: string) {
 		if (selectedInstructors.includes(instructor)) {
 			selectedInstructors = selectedInstructors.filter((i) => i !== instructor);
@@ -159,7 +137,7 @@
 		selectedCourse = null;
 	}
 
-	// Helper function to format time (assumes time is in minutes since midnight)
+	// Helper function to format time
 	function formatTime(minutes: number): string {
 		const hours = Math.floor(minutes / 60);
 		const mins = minutes % 60;
@@ -175,19 +153,15 @@
 		}
 	});
 
-	// Initialize credits range on first load
 	$effect(() => {
 		if (creditsRange[0] === 0 && creditsRange[1] === 20) {
 			creditsRange = [creditsRange_min(), creditsRange_max()];
 		}
 	});
 
-	// Track previous semester to detect changes
-	let previousSemester = $state('');
-
 	// Watch for semester changes to reset all other filters
+	let previousSemester = $state('');
 	$effect(() => {
-		// Only reset if semester actually changed (skip initial render)
 		if (previousSemester !== '' && selectedSemester !== previousSemester) {
 			selectedSchool = null;
 			selectedDepartment = null;
@@ -297,75 +271,16 @@
 			/>
 
 			<!-- Instructor Filter (Multi-select) -->
-			<div class="mb-6">
-				<label class="mb-2 block text-sm font-medium">Instructors</label>
-				<Popover.Root bind:open={instructorPopoverOpen}>
-					<Popover.Trigger bind:ref={instructorTriggerRef}>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								variant="outline"
-								class="w-full justify-between"
-								role="combobox"
-								aria-expanded={instructorPopoverOpen}
-							>
-								<span class="truncate">
-									{selectedInstructors.length > 0
-										? `${selectedInstructors.length} selected`
-										: 'Select instructors...'}
-								</span>
-								<ChevronsUpDownIcon class="ml-2 h-4 w-4 opacity-50" />
-							</Button>
-						{/snippet}
-					</Popover.Trigger>
-					<Popover.Content class="w-[240px] p-0">
-						<Command.Root>
-							<Command.Input placeholder="Search instructor..." />
-							<Command.List>
-								<Command.Empty>No instructor found.</Command.Empty>
-								<Command.Group>
-									{#each availableInstructors() as instructor (instructor)}
-										<Command.Item
-											value={instructor}
-											onSelect={() => {
-												toggleInstructor(instructor);
-											}}
-										>
-											<CheckIcon
-												class={cn(
-													'mr-2 h-4 w-4',
-													!selectedInstructors.includes(instructor) && 'text-transparent'
-												)}
-											/>
-											{instructor}
-										</Command.Item>
-									{/each}
-								</Command.Group>
-							</Command.List>
-						</Command.Root>
-					</Popover.Content>
-				</Popover.Root>
-
-				<!-- Selected instructors -->
-				{#if selectedInstructors.length > 0}
-					<div class="mt-2 flex flex-wrap gap-1">
-						{#each selectedInstructors as instructor (instructor)}
-							<span
-								class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs"
-							>
-								{instructor}
-								<button
-									type="button"
-									onclick={() => removeInstructor(instructor)}
-									class="rounded-sm hover:bg-secondary-foreground/20"
-								>
-									<XIcon class="h-3 w-3" />
-								</button>
-							</span>
-						{/each}
-					</div>
-				{/if}
-			</div>
+			<MultiSelectCombobox
+				label="Instructors"
+				value={selectedInstructors}
+				items={availableInstructors()}
+				placeholder="Select instructors..."
+				searchPlaceholder="Search instructor..."
+				emptyMessage="No instructor found."
+				onToggle={toggleInstructor}
+				onRemove={removeInstructor}
+			/>
 
 			<!-- Credits Filter -->
 			<div>
