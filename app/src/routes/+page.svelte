@@ -13,6 +13,7 @@
 	import FilterIcon from '@lucide/svelte/icons/filter';
 	import FilterCombobox from '$lib/components/catalog/FilterCombobox.svelte';
 	import CourseDetails from '$lib/components/catalog/CourseDetails.svelte';
+	import CourseCard from '$lib/components/catalog/CourseCard.svelte';
 
 	// Get available semesters from catalog
 	const semesters = Object.keys(Catalog);
@@ -417,27 +418,11 @@
 
 				<div class="space-y-4">
 					{#each filteredCourses() as course (course.course_id)}
-						<button
-							type="button"
+						<CourseCard
+							{course}
+							selected={selectedCourse?.course_id === course.course_id}
 							onclick={() => selectCourse(course)}
-							class={cn(
-								"w-full rounded-lg border bg-card p-4 shadow-sm text-left transition-colors hover:bg-accent",
-								selectedCourse?.course_id === course.course_id && "ring-2 ring-ring"
-							)}
-						>
-							<div class="mb-2 flex items-start justify-between gap-2">
-								<div class="flex-1">
-									<h3 class="text-lg font-semibold">{course.catalog_number}</h3>
-									<p class="text-sm text-muted-foreground">
-										{course.title}
-										{#if course.units}
-										<br/>{course.units} units
-										{/if}
-									</p>
-								</div>
-								<span class="text-sm font-medium text-muted-foreground">{course.school}</span>
-							</div>
-						</button>
+						/>
 					{/each}
 				</div>
 
