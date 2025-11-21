@@ -3,7 +3,7 @@ import requests
 from pathlib import Path
 from tqdm.rich import tqdm
 
-terms = ["2025 Fall", "2026 Spring"]
+terms = ["2024 Fall", "2025 Spring", "2025 Fall", "2026 Spring"]
 
 def download_schedule(term: str, school: str, dept: str | None):
     url = "https://registrar.washu.edu/classes-registration/class-schedule-search/"
