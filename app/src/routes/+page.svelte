@@ -175,7 +175,7 @@
 	});
 </script>
 
-<div class="flex h-screen flex-col">
+<div class="flex h-full flex-col">
 	<!-- Top bar with filter button -->
 	<div class="border-b bg-background p-4 lg:hidden">
 		<div class="flex items-center gap-3">
@@ -284,6 +284,7 @@
 
 			<!-- Credits Filter -->
 			<div>
+				<!-- svelte-ignore a11y_label_has_associated_control -->
 				<label class="mb-2 block text-sm font-medium">Credits</label>
 				<div class="px-2">
 					<Slider
