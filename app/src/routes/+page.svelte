@@ -354,7 +354,7 @@
 		<aside
 			class={cn(
 				"overflow-y-auto bg-background p-4 md:p-6",
-				"hidden lg:block lg:w-[700px]",
+				"hidden lg:block lg:flex-1",
 				selectedCourse && "fixed inset-0 z-50 block lg:static"
 			)}
 		>
