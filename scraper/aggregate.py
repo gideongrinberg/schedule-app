@@ -1,5 +1,5 @@
 import os
-import json
+import json, time
 import collections
 import polars as pl
 
@@ -38,10 +38,9 @@ def parse_time_field(field: str):
         .str.split_exact(":", 1)
         .struct.rename_fields(["h", "m"])
         .struct.with_fields(
-            (
-                (pl.field("h").cast(pl.Int64) * 60)
-                + pl.field("m").cast(pl.Int64)
-            ).alias(field)
+            ((pl.field("h").cast(pl.Int64) * 60) + pl.field("m").cast(pl.Int64)).alias(
+                field
+            )
         )
         .struct.field(field)
     )
@@ -71,6 +70,8 @@ section_cols = [
 
 with open("./scraper/schools.json") as f:
     schools = json.load(f)
+    schools["Other"] = schools["Washington University in St. Louis"]
+    del schools["Washington University in St. Louis"]
 
 catalogs_by_term: dict[str, dict] = {}
 
@@ -78,7 +79,9 @@ for term_dir, dfs in term_dfs.items():
     df = pl.concat(dfs)
     df = (
         df.with_columns(
-            (pl.col("catalog_number") + " &mdash; " + pl.col("title")).alias("display_name")
+            (pl.col("catalog_number") + " &mdash; " + pl.col("title")).alias(
+                "display_name"
+            )
         )
         .with_columns(
             # Units
@@ -87,10 +90,8 @@ for term_dir, dfs in term_dfs.items():
             .list.first()
             .cast(pl.Float32, strict=False)
             .alias("units"),
-
             # Days
             pl.col("days").str.split(" ").alias("days"),
-
             # Seats
             (
                 pl.when(pl.col("seats").str.contains("/"))
@@ -106,7 +107,6 @@ for term_dir, dfs in term_dfs.items():
                 .otherwise(pl.lit(None))
                 .alias("seats")
             ),
-
             # Times
             (
                 pl.col("time")
@@ -114,11 +114,11 @@ for term_dir, dfs in term_dfs.items():
                 .struct.rename_fields(["start", "end"])
                 .struct.with_fields(parse_time_field("start"), parse_time_field("end"))
             ),
-
             # Instructors
             (
                 pl.col("instructor")
-                .str.split(";").alias("instructor")
+                .str.split(";")
+                .alias("instructor")
                 .list.eval(pl.element().str.strip_chars(" "))
             ),
         )
@@ -144,13 +144,7 @@ for term_dir, dfs in term_dfs.items():
     )
 
     courses = json.loads(df_grouped.write_json())
-    term_values = (
-        df_grouped["terms"]
-        .explode()
-        .unique()
-        .sort()
-        .to_list()
-    )
+    term_values = df_grouped["terms"].explode().unique().sort().to_list()
 
     instructors = (
         df_grouped["sections"]
@@ -172,7 +166,19 @@ for term_dir, dfs in term_dfs.items():
         "courses": courses,
     }
 
+catalogs_by_term = {
+    term: catalogs_by_term[term]
+    for term in sorted(
+        catalogs_by_term.keys(),
+        key=lambda s: (int(s.split()[0]), {"Spring": 0, "Fall": 1}[s.split()[1]]),
+        reverse=True
+    )
+}
+
 with open("app/src/lib/catalog.json", "w") as f:
-    json.dump(catalogs_by_term, f)
+    json.dump({
+        "last_updated": int(time.time()),
+        "catalogs": catalogs_by_term
+    }, f, indent=4)
 
 print("Wrote per-directory-term catalogs to JSON file.")

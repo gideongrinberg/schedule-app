@@ -1,9 +1,14 @@
 import rawCatalog from '$lib/catalog.json';
 
-const Catalog = rawCatalog satisfies CatalogList;
-export default Catalog;
+const RawCatalog = rawCatalog as RawCatalog;
+export default RawCatalog;
 
 type Nullable<T> = T | null;
+
+interface RawCatalog {
+	last_updated: number,
+	catalogs: CatalogList
+}
 
 interface CatalogList {
 	[semster: string]: CatalogData
