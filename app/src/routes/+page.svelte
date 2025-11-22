@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Catalog from '$lib/catalog';
+	import RawCatalog from '$lib/catalog';
 	import type { Course } from '$lib/catalog';
 	import { Slider } from '$lib/components/ui/slider/index.js';
 	import { cn } from '$lib/utils.js';
@@ -10,6 +10,7 @@
 	import CourseDetails from '$lib/components/catalog/CourseDetails.svelte';
 	import CourseCard from '$lib/components/catalog/CourseCard.svelte';
 
+	const Catalog = RawCatalog.catalogs;
 	const semesters = Object.keys(Catalog);
 
 	// State for filters
@@ -85,7 +86,9 @@
 		if (selectedInstructors.length > 0) {
 			courses = courses.filter((course) =>
 				course.sections.some((section) =>
-					section.instructor?.some((instructor) => selectedInstructors.includes(instructor))
+					section.instructor?.some((instructor) =>
+						selectedInstructors.includes(instructor)
+					)
 				)
 			);
 		}
@@ -192,13 +195,13 @@
 	</div>
 
 	<!-- Main content area -->
-	<div class="flex flex-1 overflow-hidden relative">
+	<div class="relative flex flex-1 overflow-hidden">
 		<!-- Mobile backdrop -->
 		{#if mobileFiltersOpen}
 			<button
 				type="button"
 				onclick={() => (mobileFiltersOpen = false)}
-				class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+				class="fixed inset-0 z-40 bg-black/50 lg:hidden"
 				aria-label="Close filters"
 			></button>
 		{/if}
@@ -206,9 +209,9 @@
 		<!-- Sidebar -->
 		<aside
 			class={cn(
-				"w-64 bg-background p-4 overflow-y-auto transition-transform duration-300 ease-in-out",
-				"fixed inset-y-0 left-0 z-50 border-r lg:static lg:z-0",
-				!mobileFiltersOpen && "-translate-x-full lg:translate-x-0"
+				'w-64 overflow-y-auto bg-background p-4 transition-transform duration-300 ease-in-out',
+				'fixed inset-y-0 left-0 z-50 border-r lg:static lg:z-0',
+				!mobileFiltersOpen && '-translate-x-full lg:translate-x-0'
 			)}
 		>
 			<div class="mb-4 flex items-center justify-between">
@@ -216,7 +219,7 @@
 				<button
 					type="button"
 					onclick={() => (mobileFiltersOpen = false)}
-					class="lg:hidden rounded-sm p-1 hover:bg-secondary"
+					class="rounded-sm p-1 hover:bg-secondary lg:hidden"
 					aria-label="Close filters"
 				>
 					<XIcon class="h-5 w-5" />
@@ -229,7 +232,7 @@
 					type="text"
 					placeholder="Search courses..."
 					bind:value={searchQuery}
-					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
 				/>
 			</div>
 
@@ -301,11 +304,11 @@
 					<span>{creditsRange[1]} units</span>
 				</div>
 				<div class="mt-3">
-					<label class="flex items-center gap-2 text-sm cursor-pointer">
+					<label class="flex cursor-pointer items-center gap-2 text-sm">
 						<input
 							type="checkbox"
 							bind:checked={includeVariableCredits}
-							class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+							class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
 						/>
 						Include variable credit courses
 					</label>
@@ -314,14 +317,24 @@
 
 			<!-- Open Courses Only Filter -->
 			<div class="mt-2">
-				<label class="flex items-center gap-2 text-sm cursor-pointer">
+				<label class="flex cursor-pointer items-center gap-2 text-sm">
 					<input
 						type="checkbox"
 						bind:checked={openCoursesOnly}
-						class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
 					/>
 					Open courses only
 				</label>
+			</div>
+			<div class="mt-auto pt-4 text-xs text-muted-foreground">
+				Last updated: {new Date(RawCatalog.last_updated * 1000).toLocaleString("en-US", {
+					timeZone: "America/Chicago",
+					month: "numeric",
+					day: "numeric",
+					year: "numeric",
+					hour: "numeric",
+					minute: "2-digit"
+				})}
 			</div>
 		</aside>
 
@@ -329,7 +342,9 @@
 		<main class="flex-1 overflow-y-auto p-4 md:p-6 lg:border-r">
 			<div class="mx-auto max-w-full lg:max-w-lg">
 				<div class="mb-4 text-sm text-muted-foreground">
-					Showing {filteredCourses().length} course{filteredCourses().length !== 1 ? 's' : ''}
+					Showing {filteredCourses().length} course{filteredCourses().length !== 1
+						? 's'
+						: ''}
 				</div>
 
 				<div class="space-y-4">
@@ -344,7 +359,9 @@
 
 				{#if filteredCourses().length === 0}
 					<div class="py-12 text-center">
-						<p class="text-muted-fosmreground">No courses found matching your filters.</p>
+						<p class="text-muted-fosmreground">
+							No courses found matching your filters.
+						</p>
 					</div>
 				{/if}
 			</div>
@@ -353,16 +370,12 @@
 		<!-- Course Details Panel -->
 		<aside
 			class={cn(
-				"overflow-y-auto bg-background p-4 md:p-6",
-				"hidden lg:block lg:flex-1",
-				selectedCourse && "fixed inset-0 z-50 block lg:static"
+				'overflow-y-auto bg-background p-4 md:p-6',
+				'hidden lg:block lg:flex-1',
+				selectedCourse && 'fixed inset-0 z-50 block lg:static'
 			)}
 		>
-			<CourseDetails
-				course={selectedCourse}
-				onClose={clearSelection}
-				{formatTime}
-			/>
+			<CourseDetails course={selectedCourse} onClose={clearSelection} {formatTime} />
 		</aside>
 	</div>
 </div>

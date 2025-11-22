@@ -1,5 +1,5 @@
 import os
-import json
+import json, time
 import collections
 import polars as pl
 
@@ -174,6 +174,9 @@ catalogs_by_term = {
 }
 
 with open("app/src/lib/catalog.json", "w") as f:
-    json.dump(catalogs_by_term, f)
+    json.dump({
+        "last_updated": int(time.time()),
+        "catalogs": catalogs_by_term
+    }, f, indent=4)
 
 print("Wrote per-directory-term catalogs to JSON file.")
