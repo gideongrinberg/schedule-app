@@ -35,6 +35,7 @@
 </script>
 
 <div class="mb-6">
+	<!-- svelte-ignore a11y_label_has_associated_control -->
 	<label class="mb-2 block text-sm font-medium">{label}</label>
 	<Popover.Root bind:open={popoverOpen}>
 		<Popover.Trigger bind:ref={triggerRef}>

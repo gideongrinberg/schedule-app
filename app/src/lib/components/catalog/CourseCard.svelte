@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Course } from '$lib/catalog';
+	import { selectedCourses } from '$lib/state.svelte';
 	import { cn } from '$lib/utils.js';
 	import Button from '../ui/button/button.svelte';
 
@@ -34,12 +35,25 @@
 		</div>
 		<span class="text-sm font-medium text-muted-foreground">{course.school}</span>
 	</div>
-	<div class="mt-1 flex justify-end">
-		<Button
-			class="border px-3 py-1"
-			onclick={(e: Event) => {
-				e.stopPropagation();
-			}}>Add Course</Button
-		>
-	</div>
+	{#if !selectedCourses.some((c) => c.course_id == course.course_id)}
+		<div class="mt-1 flex justify-end">
+			<Button
+				class="border px-3 py-1"
+				onclick={(e: Event) => {
+					e.stopPropagation();
+					selectedCourses.push(course);
+				}}>Add Course</Button
+			>
+		</div>
+	{:else}
+		<div class="mt-1 flex justify-end">
+			<Button
+				class="border px-3 py-1"
+				onclick={(e: Event) => {
+					e.stopPropagation();
+					selectedCourses.splice(selectedCourses.findIndex((c) => c.course_id === course.course_id), 1);
+				}}>Remove Course</Button
+			>
+		</div>
+	{/if}
 </div>
