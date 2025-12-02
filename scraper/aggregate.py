@@ -124,8 +124,8 @@ for term_dir, dfs in term_dfs.items():
         )
         .with_columns(
             pl.when(
-                pl.col("time").struct.field("start").has_nulls()
-                | pl.col("time").struct.field("end").has_nulls()
+                pl.col("time").struct.field("start").is_null()
+                | pl.col("time").struct.field("end").is_null()
             )
             .then(pl.lit(None))
             .otherwise(pl.col("time"))
