@@ -1,62 +1,36 @@
 import rawCatalog from '$lib/catalog.json';
 
-const RawCatalog = rawCatalog as RawCatalog;
-export default RawCatalog;
+const Catalog = rawCatalog as Catalog;
+export default Catalog;
 
 type Nullable<T> = T | null;
 
-interface RawCatalog {
-	last_updated: number,
-	catalogs: CatalogList
-}
-
-interface CatalogList {
-	[semster: string]: CatalogData
-}
-
-interface CatalogData {
-	meta: CatalogMetadata;
-	courses: Course[];
-}
-
-interface CatalogMetadata {
-	schools: {
-		[key: string]: string[];
-	};
-	terms: string[];
-	instructors: string[];
+interface Catalog {
+	[term: string]: Course[];
 }
 
 export interface Course {
-	course_id: Nullable<string>;
-	department: Nullable<string>;
-	title: string;
-	catalog_number: string;
-	units: Nullable<number>;
+	id: string;
 	school: string;
-	display_name: string;
-	description: Nullable<string>;
-	sections: Section[];
-	terms: string[];
+	department: string;
+	title: string;
+	catalogNumber: string;
+	units: Nullable<number>;
+	description: string;
+	level: string;
+	sections: {
+		lecture: Section[];
+		lab?: Section[];
+	};
 }
 
-interface Section {
-	section_id: string;
-	section_number: string;
+export interface Section {
+	id: string;
+	number: string;
 	term: string;
-	instructor: Nullable<string[]>;
-	delivery: Nullable<string>;
-	days: Nullable<string[]>;
-	time: Nullable<SectionTime>;
-	seats: Nullable<SectionSeats>;
-}
-
-interface SectionTime {
-	start: number;
-	end: number;
-}
-
-interface SectionSeats {
-	filled: number;
-	total: number;
+	instructor: string[];
+	delivery: string;
+	days?: string[];
+	time: Nullable<[number, number]>;
+	seats: Nullable<[number, number]>;
 }

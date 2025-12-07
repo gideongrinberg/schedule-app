@@ -1,5 +1,5 @@
 <script lang="ts">
-	import RawCatalog from '$lib/catalog';
+	import Catalog from '$lib/catalog';
 	import type { Course } from '$lib/catalog';
 	import { Slider } from '$lib/components/ui/slider/index.js';
 	import { cn } from '$lib/utils.js';
@@ -10,11 +10,10 @@
 	import CourseDetails from '$lib/components/catalog/CourseDetails.svelte';
 	import CourseCard from '$lib/components/catalog/CourseCard.svelte';
 
-	const Catalog = RawCatalog.catalogs;
-	const semesters = Object.keys(Catalog);
+	const terms = Object.keys(Catalog);
 
 	// State for filters
-	let selectedSemester = $state<string>(semesters[0]);
+	let selectedTerm = $state<string>(terms[0]);
 	let searchQuery = $state('');
 	let selectedSchool = $state<string | null>(null);
 	let selectedDepartment = $state<string | null>(null);
@@ -27,37 +26,58 @@
 	let selectedCourse = $state<Course | null>(null);
 
 	// Derived catalog/filter values
-	const currentCatalog = $derived(Catalog[selectedSemester]);
-	const schools = $derived(Object.keys(currentCatalog.meta.schools));
+	const currentCourses = $derived(Catalog[selectedTerm]);
 
-	const availableDepartments = $derived(
-		selectedSchool ? currentCatalog.meta.schools[selectedSchool] || [] : []
-	);
+	// Compute schools dynamically
+	const schools = $derived(() => {
+		const schoolSet = new Set<string>();
+		currentCourses.forEach((course) => schoolSet.add(course.school));
+		return Array.from(schoolSet).sort();
+	});
 
+	// Compute departments for selected school
+	const availableDepartments = $derived(() => {
+		if (!selectedSchool) return [];
+		const deptSet = new Set<string>();
+		currentCourses.forEach((course) => {
+			if (course.school === selectedSchool) {
+				deptSet.add(course.department);
+			}
+		});
+		return Array.from(deptSet).sort();
+	});
+
+	// Compute available instructors
 	const availableInstructors = $derived(() => {
 		const instructorSet = new Set<string>();
-		currentCatalog.courses.forEach((course) => {
-			course.sections.forEach((section) => {
-				if (section.instructor) {
+		currentCourses.forEach((course) => {
+			// Handle both lecture and lab sections
+			course.sections.lecture.forEach((section) => {
+				section.instructor.forEach((instructor) => {
+					if (instructor) instructorSet.add(instructor);
+				});
+			});
+			if (course.sections.lab) {
+				course.sections.lab.forEach((section) => {
 					section.instructor.forEach((instructor) => {
 						if (instructor) instructorSet.add(instructor);
 					});
-				}
-			});
+				});
+			}
 		});
 		return Array.from(instructorSet).sort();
 	});
 
 	// Get minimum and maximum credit ranges for current catalog
 	const creditsRange_min = $derived(() => {
-		const units = currentCatalog.courses
+		const units = currentCourses
 			.map((course) => course.units)
 			.filter((u): u is number => u !== null);
 		return units.length > 0 ? Math.min(...units) : 0;
 	});
 
 	const creditsRange_max = $derived(() => {
-		const units = currentCatalog.courses
+		const units = currentCourses
 			.map((course) => course.units)
 			.filter((u): u is number => u !== null);
 		return units.length > 0 ? Math.max(...units) : 20;
@@ -65,13 +85,13 @@
 
 	// Derive the full list of courses based on current filters.
 	const filteredCourses = $derived(() => {
-		let courses = currentCatalog.courses;
+		let courses = currentCourses;
 		if (searchQuery.trim()) {
 			const query = searchQuery.toLowerCase();
 			courses = courses.filter(
 				(course) =>
 					course.title.toLowerCase().includes(query) ||
-					course.catalog_number.toLowerCase().includes(query)
+					course.catalogNumber.toLowerCase().includes(query)
 			);
 		}
 
@@ -84,13 +104,18 @@
 		}
 
 		if (selectedInstructors.length > 0) {
-			courses = courses.filter((course) =>
-				course.sections.some((section) =>
-					section.instructor?.some((instructor) =>
+			courses = courses.filter((course) => {
+				// Check both lecture and lab sections
+				const allSections = [
+					...course.sections.lecture,
+					...(course.sections.lab || [])
+				];
+				return allSections.some((section) =>
+					section.instructor.some((instructor) =>
 						selectedInstructors.includes(instructor)
 					)
-				)
-			);
+				);
+			});
 		}
 
 		// Apply credits filter
@@ -101,11 +126,15 @@
 
 		// Apply open courses filter
 		if (openCoursesOnly) {
-			courses = courses.filter((course) =>
-				course.sections.some(
-					(section) => section.seats && section.seats.filled < section.seats.total
-				)
-			);
+			courses = courses.filter((course) => {
+				const allSections = [
+					...course.sections.lecture,
+					...(course.sections.lab || [])
+				];
+				return allSections.some(
+					(section) => section.seats && section.seats[1] > section.seats[0]
+				);
+			});
 		}
 
 		return courses;
@@ -151,7 +180,7 @@
 
 	// Watch for school changes to reset department
 	$effect(() => {
-		if (selectedSchool && !availableDepartments.includes(selectedDepartment || '')) {
+		if (selectedSchool && !availableDepartments().includes(selectedDepartment || '')) {
 			selectedDepartment = null;
 		}
 	});
@@ -162,10 +191,10 @@
 		}
 	});
 
-	// Watch for semester changes to reset all other filters
-	let previousSemester = $state('');
+	// Watch for term changes to reset all other filters
+	let previousTerm = $state('');
 	$effect(() => {
-		if (previousSemester !== '' && selectedSemester !== previousSemester) {
+		if (previousTerm !== '' && selectedTerm !== previousTerm) {
 			selectedSchool = null;
 			selectedDepartment = null;
 			selectedInstructors = [];
@@ -174,7 +203,7 @@
 			includeVariableCredits = true;
 			openCoursesOnly = false;
 		}
-		previousSemester = selectedSemester;
+		previousTerm = selectedTerm;
 	});
 </script>
 
@@ -236,21 +265,21 @@
 				/>
 			</div>
 
-			<!-- Semester Filter -->
+			<!-- Term Filter -->
 			<FilterCombobox
-				label="Semester"
-				value={selectedSemester}
-				items={semesters}
-				searchPlaceholder="Search semester..."
-				emptyMessage="No semester found."
-				onSelect={(semester) => (selectedSemester = semester)}
+				label="Term"
+				value={selectedTerm}
+				items={terms}
+				searchPlaceholder="Search term..."
+				emptyMessage="No term found."
+				onSelect={(term) => (selectedTerm = term)}
 			/>
 
 			<!-- School Filter -->
 			<FilterCombobox
 				label="School"
 				value={selectedSchool}
-				items={schools}
+				items={schools()}
 				placeholder="Select school..."
 				searchPlaceholder="Search school..."
 				emptyMessage="No school found."
@@ -263,7 +292,7 @@
 			<FilterCombobox
 				label="Department"
 				value={selectedDepartment}
-				items={availableDepartments}
+				items={availableDepartments()}
 				placeholder="Select department..."
 				searchPlaceholder="Search department..."
 				emptyMessage="No department found."
@@ -273,7 +302,7 @@
 				disabled={!selectedSchool}
 			/>
 
-			<!-- Instructor Filter (Multi-select) -->
+			<!-- Instructor Filter -->
 			<MultiSelectCombobox
 				label="Instructors"
 				value={selectedInstructors}
@@ -326,16 +355,6 @@
 					Open courses only
 				</label>
 			</div>
-			<div class="mt-auto pt-4 text-xs text-muted-foreground">
-				Last updated: {new Date(RawCatalog.last_updated * 1000).toLocaleString("en-US", {
-					timeZone: "America/Chicago",
-					month: "numeric",
-					day: "numeric",
-					year: "numeric",
-					hour: "numeric",
-					minute: "2-digit"
-				})}
-			</div>
 		</aside>
 
 		<!-- Course list -->
@@ -348,10 +367,12 @@
 				</div>
 
 				<div class="space-y-4">
-					{#each filteredCourses() as course (course.course_id)}
+					{#each filteredCourses() as course, index (index)}
 						<CourseCard
 							{course}
-							selected={selectedCourse?.course_id === course.course_id}
+							selected={selectedCourse?.id === course.id &&
+							          selectedCourse?.catalogNumber === course.catalogNumber &&
+							          selectedCourse?.department === course.department}
 							onclick={() => selectCourse(course)}
 						/>
 					{/each}

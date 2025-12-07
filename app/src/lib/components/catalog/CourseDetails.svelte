@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Course } from '$lib/catalog';
+	import type { Course, Section } from '$lib/catalog';
 	import XIcon from '@lucide/svelte/icons/x';
 
 	interface Props {
@@ -9,6 +9,16 @@
 	}
 
 	let { course, onClose, formatTime }: Props = $props();
+
+	// Helper to get all sections (both lecture and lab)
+	function getAllSections(course: Course): Array<{ section: Section; type: 'Lecture' | 'Lab' }> {
+		const sections: Array<{ section: Section; type: 'Lecture' | 'Lab' }> = [];
+		course.sections.lecture.forEach(section => sections.push({ section, type: 'Lecture' }));
+		if (course.sections.lab) {
+			course.sections.lab.forEach(section => sections.push({ section, type: 'Lab' }));
+		}
+		return sections;
+	}
 </script>
 
 {#if course}
@@ -16,7 +26,7 @@
 		<div class="flex-1">
 			<h2 class="text-2xl font-semibold">{course.title}</h2>
 			<p class="text-sm text-muted-foreground mt-1">
-				{@html course.display_name}
+				{course.catalogNumber} • {course.level}
 			</p>
 		</div>
 		<button
@@ -37,24 +47,25 @@
 					<span class="font-medium">School:</span>
 					<span class="ml-2 text-muted-foreground">{course.school}</span>
 				</div>
-				{#if course.department}
-					<div>
-						<span class="font-medium">Department:</span>
-						<span class="ml-2 text-muted-foreground">{course.department}</span>
-					</div>
-				{/if}
+				<div>
+					<span class="font-medium">Department:</span>
+					<span class="ml-2 text-muted-foreground">{course.department}</span>
+				</div>
 				{#if course.units}
 					<div>
 						<span class="font-medium">Units:</span>
 						<span class="ml-2 text-muted-foreground">{course.units}</span>
 					</div>
-				{/if}
-				{#if course.course_id}
+				{:else}
 					<div>
-						<span class="font-medium">Course ID:</span>
-						<span class="ml-2 text-muted-foreground">{course.course_id}</span>
+						<span class="font-medium">Units:</span>
+						<span class="ml-2 text-muted-foreground">Variable</span>
 					</div>
 				{/if}
+				<div>
+					<span class="font-medium">Course ID:</span>
+					<span class="ml-2 text-muted-foreground">{course.id}</span>
+				</div>
 			</div>
 
 			{#if course.description}
@@ -68,32 +79,30 @@
 		<!-- Sections -->
 		<div>
 			<h3 class="mb-3 text-lg font-semibold">
-				Sections ({course.sections.length})
+				Sections ({course.sections.lecture.length + (course.sections.lab?.length || 0)})
 			</h3>
 
 			<div class="space-y-3">
-				{#each course.sections as section (section.section_id)}
+				{#each getAllSections(course) as { section, type } (section.id)}
 					<div class="rounded-md border bg-muted/50 p-4">
 						<div class="mb-2 flex items-start justify-between">
 							<div>
-								<span class="font-medium">Section {section.section_number}</span>
-								{#if section.term}
-									<span class="ml-2 text-sm text-muted-foreground">• {section.term}</span>
-								{/if}
+								<span class="font-medium">{type} {section.number}</span>
+								<span class="ml-2 text-sm text-muted-foreground">• {section.term}</span>
 							</div>
 							{#if section.seats}
 								<span
 									class="text-sm"
-									class:text-destructive={section.seats.filled >= section.seats.total}
-									class:text-green-600={section.seats.filled < section.seats.total}
+									class:text-destructive={section.seats[0] >= section.seats[1]}
+									class:text-green-600={section.seats[0] < section.seats[1]}
 								>
-									{section.seats.filled}/{section.seats.total} seats taken
+									{section.seats[0]}/{section.seats[1]} seats taken
 								</span>
 							{/if}
 						</div>
 
 						<div class="space-y-1 text-sm">
-							{#if section.instructor && section.instructor.length > 0}
+							{#if section.instructor.length > 0}
 								<div>
 									<span class="font-medium">Instructor:</span>
 									<span class="ml-2 text-muted-foreground">
@@ -115,17 +124,15 @@
 								<div>
 									<span class="font-medium">Time:</span>
 									<span class="ml-2 text-muted-foreground">
-										{formatTime(section.time.start)} - {formatTime(section.time.end)}
+										{formatTime(section.time[0])} - {formatTime(section.time[1])}
 									</span>
 								</div>
 							{/if}
 
-							{#if section.delivery}
-								<div>
-									<span class="font-medium">Delivery:</span>
-									<span class="ml-2 text-muted-foreground">{section.delivery}</span>
-								</div>
-							{/if}
+							<div>
+								<span class="font-medium">Delivery:</span>
+								<span class="ml-2 text-muted-foreground">{section.delivery}</span>
+							</div>
 						</div>
 					</div>
 				{/each}

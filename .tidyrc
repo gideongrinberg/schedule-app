@@ -1,8 +1,0 @@
-output-xhtml: yes
-numeric-entities: yes
-char-encoding: utf8
-input-encoding: utf8
-output-encoding: utf8
-force-output: yes
-show-warnings: no
-clean: yes

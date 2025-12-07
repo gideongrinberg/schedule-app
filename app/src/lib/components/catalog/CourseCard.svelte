@@ -25,7 +25,7 @@
 >
 	<div class="mb-2 flex items-start justify-between gap-2">
 		<div class="flex-1">
-			<h3 class="text-lg font-semibold">{course.catalog_number}</h3>
+			<h3 class="text-lg font-semibold">{course.catalogNumber}</h3>
 			<p class="text-sm text-muted-foreground">
 				{course.title}
 				{#if course.units}
@@ -35,7 +35,7 @@
 		</div>
 		<span class="text-sm font-medium text-muted-foreground">{course.school}</span>
 	</div>
-	{#if !selectedCourses.some((c) => c.course_id == course.course_id)}
+	{#if !selectedCourses.some((c) => c.id === course.id && c.catalogNumber === course.catalogNumber && c.department === course.department)}
 		<div class="mt-1 flex justify-end">
 			<Button
 				class="border px-3 py-1"
@@ -51,7 +51,12 @@
 				class="border px-3 py-1"
 				onclick={(e: Event) => {
 					e.stopPropagation();
-					selectedCourses.splice(selectedCourses.findIndex((c) => c.course_id === course.course_id), 1);
+					const idx = selectedCourses.findIndex((c) =>
+						c.id === course.id &&
+						c.catalogNumber === course.catalogNumber &&
+						c.department === course.department
+					);
+					if (idx !== -1) selectedCourses.splice(idx, 1);
 				}}>Remove Course</Button
 			>
 		</div>
