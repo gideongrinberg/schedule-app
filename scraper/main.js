@@ -204,7 +204,7 @@ const main = async () => {
         }
     }
 
-    fs.writeFileSync("catalog.json", JSON.stringify(courses));
+    fs.writeFileSync("../app/src/lib/catalog.json", JSON.stringify(courses));
 };
 
 await main();
