@@ -27,6 +27,14 @@
 			const section = sections.find((s) => s.id === selectedValue);
 			if (section && section.id !== selectedSection?.id) {
 				onSelect(section);
+				// Check if selection was accepted after reactive updates
+				tick().then(() => {
+					// If the prop didn't update to match, the selection was rejected
+					if (selectedSection?.id !== selectedValue) {
+						// Revert to the current valid selection
+						selectedValue = selectedSection?.id || '';
+					}
+				});
 			}
 		}
 	});
