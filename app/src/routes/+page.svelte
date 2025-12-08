@@ -106,10 +106,7 @@
 		if (selectedInstructors.length > 0) {
 			courses = courses.filter((course) => {
 				// Check both lecture and lab sections
-				const allSections = [
-					...course.sections.lecture,
-					...(course.sections.lab || [])
-				];
+				const allSections = [...course.sections.lecture, ...(course.sections.lab || [])];
 				return allSections.some((section) =>
 					section.instructor.some((instructor) =>
 						selectedInstructors.includes(instructor)
@@ -127,10 +124,7 @@
 		// Apply open courses filter
 		if (openCoursesOnly) {
 			courses = courses.filter((course) => {
-				const allSections = [
-					...course.sections.lecture,
-					...(course.sections.lab || [])
-				];
+				const allSections = [...course.sections.lecture, ...(course.sections.lab || [])];
 				return allSections.some(
 					(section) => section.seats && section.seats[1] > section.seats[0]
 				);
@@ -171,8 +165,6 @@
 
 	// Helper function to format time
 	function formatTime(minutes: number): string {
-		// Handle times that extend past midnight (scraper bug workaround)
-		// Times > 1440 are wrapped and marked with ⁺
 		if (minutes > 1440) {
 			const wrapped = minutes % 1440;
 			const hours = Math.floor(wrapped / 60);
@@ -382,8 +374,8 @@
 						<CourseCard
 							{course}
 							selected={selectedCourse?.id === course.id &&
-							          selectedCourse?.catalogNumber === course.catalogNumber &&
-							          selectedCourse?.department === course.department}
+								selectedCourse?.catalogNumber === course.catalogNumber &&
+								selectedCourse?.department === course.department}
 							onclick={() => selectCourse(course)}
 						/>
 					{/each}

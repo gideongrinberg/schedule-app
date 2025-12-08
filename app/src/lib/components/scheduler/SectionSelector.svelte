@@ -66,7 +66,11 @@
 				<Select.Item
 					value={section.id}
 					disabled={isConflicting}
-					class={isConflicting ? 'text-destructive opacity-50' : isFull ? 'text-orange-600' : ''}
+					class={isConflicting
+						? 'text-destructive opacity-50'
+						: isFull
+							? 'text-orange-600'
+							: ''}
 				>
 					<div class="flex flex-col items-start gap-0.5">
 						<div class="font-medium">

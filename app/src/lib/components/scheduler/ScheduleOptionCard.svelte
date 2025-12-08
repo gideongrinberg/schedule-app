@@ -30,7 +30,7 @@
 	});
 </script>
 
-<div class="rounded-lg border bg-card shadow-sm overflow-hidden">
+<div class="overflow-hidden rounded-lg border bg-card shadow-sm">
 	<!-- Header -->
 	<div class="border-b bg-muted/30 px-4 py-3">
 		<div class="flex items-center justify-between">
@@ -48,14 +48,14 @@
 				</div>
 			</div>
 			<Button size="sm" onclick={onSelect}>
-				<CheckIcon class="h-4 w-4 mr-1" />
+				<CheckIcon class="mr-1 h-4 w-4" />
 				Apply
 			</Button>
 		</div>
 	</div>
 
 	<!-- Metrics -->
-	<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 border-b bg-muted/10">
+	<div class="grid grid-cols-2 gap-3 border-b bg-muted/10 p-4 sm:grid-cols-4">
 		<div class="text-center">
 			<div class="text-2xl font-bold">{option.metrics.daysPerWeek}</div>
 			<div class="text-xs text-muted-foreground">Days/Week</div>
@@ -80,8 +80,8 @@
 	</div>
 
 	<!-- Course list -->
-	<div class="border-t p-4 bg-muted/5">
-		<p class="text-xs font-medium text-muted-foreground mb-2">
+	<div class="border-t bg-muted/5 p-4">
+		<p class="mb-2 text-xs font-medium text-muted-foreground">
 			Courses ({option.entries.length}):
 		</p>
 		<div class="flex flex-wrap gap-1.5">

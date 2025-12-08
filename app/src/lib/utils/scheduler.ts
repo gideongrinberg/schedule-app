@@ -31,7 +31,12 @@ export function sectionsConflict(
 	}
 
 	// If either section has no days, no conflict (online/async courses)
-	if (!section1.days || !section2.days || section1.days.length === 0 || section2.days.length === 0) {
+	if (
+		!section1.days ||
+		!section2.days ||
+		section1.days.length === 0 ||
+		section2.days.length === 0
+	) {
 		return { conflicts: false, days: [] };
 	}
 

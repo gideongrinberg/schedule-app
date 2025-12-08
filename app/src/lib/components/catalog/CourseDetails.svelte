@@ -13,9 +13,9 @@
 	// Helper to get all sections (both lecture and lab)
 	function getAllSections(course: Course): Array<{ section: Section; type: 'Lecture' | 'Lab' }> {
 		const sections: Array<{ section: Section; type: 'Lecture' | 'Lab' }> = [];
-		course.sections.lecture.forEach(section => sections.push({ section, type: 'Lecture' }));
+		course.sections.lecture.forEach((section) => sections.push({ section, type: 'Lecture' }));
 		if (course.sections.lab) {
-			course.sections.lab.forEach(section => sections.push({ section, type: 'Lab' }));
+			course.sections.lab.forEach((section) => sections.push({ section, type: 'Lab' }));
 		}
 		return sections;
 	}
@@ -25,7 +25,7 @@
 	<div class="mb-4 flex items-start justify-between">
 		<div class="flex-1">
 			<h2 class="text-2xl font-semibold">{course.title}</h2>
-			<p class="text-sm text-muted-foreground mt-1">
+			<p class="mt-1 text-sm text-muted-foreground">
 				{course.catalogNumber} • {course.level}
 			</p>
 		</div>
@@ -88,7 +88,9 @@
 						<div class="mb-2 flex items-start justify-between">
 							<div>
 								<span class="font-medium">{type} {section.number}</span>
-								<span class="ml-2 text-sm text-muted-foreground">• {section.term}</span>
+								<span class="ml-2 text-sm text-muted-foreground"
+									>• {section.term}</span
+								>
 							</div>
 							{#if section.seats}
 								<span
@@ -124,7 +126,9 @@
 								<div>
 									<span class="font-medium">Time:</span>
 									<span class="ml-2 text-muted-foreground">
-										{formatTime(section.time[0])} - {formatTime(section.time[1])}
+										{formatTime(section.time[0])} - {formatTime(
+											section.time[1]
+										)}
 									</span>
 								</div>
 							{/if}

@@ -85,19 +85,24 @@
 
 <div class="space-y-6">
 	<!-- Instructions -->
-	<div class="rounded-lg border bg-blue-50 dark:bg-blue-950/20 p-4">
+	<div class="rounded-lg border bg-blue-50 p-4 dark:bg-blue-950/20">
 		<div class="flex gap-3">
-			<InfoIcon class="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+			<InfoIcon class="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
 			<div class="flex-1 text-sm">
-				<p class="font-medium text-blue-900 dark:text-blue-100 mb-1">How Auto-Scheduling Works</p>
-				<ul class="text-blue-800 dark:text-blue-200 space-y-1 text-xs">
+				<p class="mb-1 font-medium text-blue-900 dark:text-blue-100">
+					How Auto-Scheduling Works
+				</p>
+				<ul class="space-y-1 text-xs text-blue-800 dark:text-blue-200">
 					<li>
-						• Configure your preferences below to customize how schedules are generated and ranked
+						• Configure your preferences below to customize how schedules are generated
+						and ranked
 					</li>
-					<li>• Click "Generate Schedules" to create up to 50 optimized schedule options</li>
 					<li>
-						• Review the options and click "Apply" on your preferred schedule to load it into the
-						active schedule
+						• Click "Generate Schedules" to create up to 50 optimized schedule options
+					</li>
+					<li>
+						• Review the options and click "Apply" on your preferred schedule to load it
+						into the active schedule
 					</li>
 					<li>• You can then switch to Manual mode to make further adjustments</li>
 				</ul>
@@ -105,7 +110,7 @@
 		</div>
 	</div>
 
-	<div class="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6">
+	<div class="grid grid-cols-1 gap-6 lg:grid-cols-[400px_1fr]">
 		<!-- Left: Preferences -->
 		<div class="space-y-4">
 			<PreferencesPanel preferences={localPreferences} onChange={handlePreferenceChange} />
@@ -117,16 +122,16 @@
 				disabled={isGenerating || coursesToSchedule().length === 0}
 			>
 				{#if isGenerating}
-					<span class="animate-spin mr-2">⏳</span>
+					<span class="mr-2 animate-spin">⏳</span>
 					Generating...
 				{:else}
-					<SparklesIcon class="h-4 w-4 mr-2" />
+					<SparklesIcon class="mr-2 h-4 w-4" />
 					Generate Schedules
 				{/if}
 			</Button>
 
 			{#if coursesToSchedule().length === 0}
-				<p class="text-xs text-center text-muted-foreground">
+				<p class="text-center text-xs text-muted-foreground">
 					Select courses from the catalog to enable generation
 				</p>
 			{/if}
@@ -136,27 +141,27 @@
 		<div class="min-w-0">
 			{#if !hasGenerated}
 				<div class="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
-					<SparklesIcon class="h-12 w-12 mx-auto mb-3 opacity-50" />
+					<SparklesIcon class="mx-auto mb-3 h-12 w-12 opacity-50" />
 					<p class="text-lg font-medium">Ready to Generate Schedules</p>
-					<p class="text-sm mt-2">
+					<p class="mt-2 text-sm">
 						Configure your preferences and click "Generate Schedules" to see options
 					</p>
 				</div>
 			{:else if isGenerating}
 				<div class="rounded-lg border p-12 text-center">
-					<div class="animate-spin text-4xl mb-3">⏳</div>
+					<div class="mb-3 animate-spin text-4xl">⏳</div>
 					<p class="text-lg font-medium">Generating Schedules...</p>
-					<p class="text-sm text-muted-foreground mt-2">
+					<p class="mt-2 text-sm text-muted-foreground">
 						Analyzing {coursesToSchedule().length} course(s) and finding optimal combinations
 					</p>
 				</div>
 			{:else if error}
 				<div class="rounded-lg border border-destructive bg-destructive/10 p-6">
 					<div class="flex items-start gap-3">
-						<AlertCircleIcon class="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+						<AlertCircleIcon class="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
 						<div>
 							<p class="font-medium text-destructive">Generation Failed</p>
-							<p class="text-sm text-destructive/80 mt-1">{error}</p>
+							<p class="mt-1 text-sm text-destructive/80">{error}</p>
 						</div>
 					</div>
 				</div>

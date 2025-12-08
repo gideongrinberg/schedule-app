@@ -61,10 +61,7 @@
 					<Command.Empty>{emptyMessage}</Command.Empty>
 					<Command.Group>
 						{#each items as item (item)}
-							<Command.Item
-								value={item}
-								onSelect={() => onToggle(item)}
-							>
+							<Command.Item value={item} onSelect={() => onToggle(item)}>
 								<CheckIcon
 									class={cn(
 										'mr-2 h-4 w-4',
@@ -84,7 +81,9 @@
 	{#if value.length > 0}
 		<div class="mt-2 flex flex-wrap gap-1">
 			{#each value as item (item)}
-				<span class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs">
+				<span
+					class="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs"
+				>
 					{item}
 					<button
 						type="button"

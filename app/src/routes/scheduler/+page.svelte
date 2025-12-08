@@ -110,9 +110,7 @@
 	<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 		<div>
 			<h1 class="text-3xl font-bold">Schedule Builder</h1>
-			<p class="text-sm text-muted-foreground mt-1">
-				Build and manage your course schedules
-			</p>
+			<p class="mt-1 text-sm text-muted-foreground">Build and manage your course schedules</p>
 		</div>
 
 		<!-- Schedule selector -->
@@ -144,7 +142,8 @@
 		<nav class="flex gap-6" aria-label="Scheduler tabs">
 			<button
 				onclick={() => (activeTab = 'manual')}
-				class="border-b-2 px-1 pb-3 text-sm font-medium transition-colors {activeTab === 'manual'
+				class="border-b-2 px-1 pb-3 text-sm font-medium transition-colors {activeTab ===
+				'manual'
 					? 'border-primary text-primary'
 					: 'border-transparent text-muted-foreground hover:text-foreground'}"
 			>
@@ -152,7 +151,8 @@
 			</button>
 			<button
 				onclick={() => (activeTab = 'auto')}
-				class="border-b-2 px-1 pb-3 text-sm font-medium transition-colors {activeTab === 'auto'
+				class="border-b-2 px-1 pb-3 text-sm font-medium transition-colors {activeTab ===
+				'auto'
 					? 'border-primary text-primary'
 					: 'border-transparent text-muted-foreground hover:text-foreground'}"
 			>
@@ -160,7 +160,8 @@
 			</button>
 			<button
 				onclick={() => (activeTab = 'manage')}
-				class="border-b-2 px-1 pb-3 text-sm font-medium transition-colors {activeTab === 'manage'
+				class="border-b-2 px-1 pb-3 text-sm font-medium transition-colors {activeTab ===
+				'manage'
 					? 'border-primary text-primary'
 					: 'border-transparent text-muted-foreground hover:text-foreground'}"
 			>
@@ -173,7 +174,7 @@
 	{#if selectedCourses.length === 0}
 		<div class="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
 			<p class="text-lg">No courses selected</p>
-			<p class="text-sm mt-1">Go to the Catalog page to select courses first</p>
+			<p class="mt-1 text-sm">Go to the Catalog page to select courses first</p>
 			<Button class="mt-4" href="/">Go to Catalog</Button>
 		</div>
 	{:else if activeTab === 'manual'}

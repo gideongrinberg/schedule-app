@@ -70,7 +70,10 @@ if (browser) {
 		});
 
 		$effect(() => {
-			window.localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(schedulerPreferences));
+			window.localStorage.setItem(
+				PREFERENCES_STORAGE_KEY,
+				JSON.stringify(schedulerPreferences)
+			);
 		});
 	});
 }

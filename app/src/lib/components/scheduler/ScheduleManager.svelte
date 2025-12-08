@@ -78,7 +78,7 @@
 	<div class="flex items-center justify-between">
 		<h2 class="text-lg font-semibold">Your Schedules</h2>
 		<Button size="sm" onclick={() => (createDialogOpen = true)}>
-			<PlusIcon class="h-4 w-4 mr-1" />
+			<PlusIcon class="mr-1 h-4 w-4" />
 			New Schedule
 		</Button>
 	</div>
@@ -86,9 +86,9 @@
 	{#if schedules.length === 0}
 		<div class="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
 			<p class="text-lg">No schedules yet</p>
-			<p class="text-sm mt-1">Create your first schedule to get started</p>
+			<p class="mt-1 text-sm">Create your first schedule to get started</p>
 			<Button class="mt-4" onclick={() => (createDialogOpen = true)}>
-				<PlusIcon class="h-4 w-4 mr-1" />
+				<PlusIcon class="mr-1 h-4 w-4" />
 				Create Schedule
 			</Button>
 		</div>
@@ -103,12 +103,12 @@
 				>
 					<div class="flex items-start justify-between gap-3">
 						<!-- Schedule info -->
-						<div class="flex-1 min-w-0">
+						<div class="min-w-0 flex-1">
 							{#if editingScheduleId === schedule.id}
 								<input
 									type="text"
 									bind:value={editScheduleName}
-									class="w-full rounded border border-input bg-background px-2 py-1 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+									class="w-full rounded border border-input bg-background px-2 py-1 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 									onkeydown={(e) => {
 										if (e.key === 'Enter') saveEdit();
 										if (e.key === 'Escape') cancelEdit();
@@ -116,7 +116,7 @@
 								/>
 							{:else}
 								<div class="flex items-center gap-2">
-									<h3 class="font-semibold truncate">{schedule.name}</h3>
+									<h3 class="truncate font-semibold">{schedule.name}</h3>
 									{#if isActive}
 										<span
 											class="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
@@ -126,8 +126,12 @@
 									{/if}
 								</div>
 							{/if}
-							<div class="text-xs text-muted-foreground mt-1">
-								<span>{schedule.entries.length} course{schedule.entries.length !== 1 ? 's' : ''}</span>
+							<div class="mt-1 text-xs text-muted-foreground">
+								<span
+									>{schedule.entries.length} course{schedule.entries.length !== 1
+										? 's'
+										: ''}</span
+								>
 								<span class="mx-1">•</span>
 								<span>Updated {formatDate(schedule.updatedAt)}</span>
 							</div>
@@ -144,11 +148,19 @@
 								</Button>
 							{:else}
 								{#if !isActive}
-									<Button size="sm" variant="outline" onclick={() => onSwitch(schedule.id)}>
+									<Button
+										size="sm"
+										variant="outline"
+										onclick={() => onSwitch(schedule.id)}
+									>
 										Switch
 									</Button>
 								{/if}
-								<Button size="sm" variant="ghost" onclick={() => startEdit(schedule)}>
+								<Button
+									size="sm"
+									variant="ghost"
+									onclick={() => startEdit(schedule)}
+								>
 									<PencilIcon class="h-4 w-4" />
 								</Button>
 								<Button
@@ -183,7 +195,7 @@
 					type="text"
 					placeholder="e.g., Fall 2024 Plan A"
 					bind:value={newScheduleName}
-					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+					class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
 					onkeydown={(e) => {
 						if (e.key === 'Enter') handleCreate();
 					}}

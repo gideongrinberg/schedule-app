@@ -81,7 +81,9 @@
 				: null;
 
 		if (!lecture) {
-			alert(`Cannot add ${course.catalogNumber}: No non-conflicting lecture sections available.`);
+			alert(
+				`Cannot add ${course.catalogNumber}: No non-conflicting lecture sections available.`
+			);
 			return;
 		}
 
@@ -185,14 +187,14 @@
 	}
 </script>
 
-<div class="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6">
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_400px]">
 	<!-- Time grid -->
 	<div class="min-w-0">
-		<h2 class="text-lg font-semibold mb-3">Weekly Schedule</h2>
+		<h2 class="mb-3 text-lg font-semibold">Weekly Schedule</h2>
 		{#if schedule.entries.length === 0}
 			<div class="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
 				<p class="text-lg">No courses in schedule</p>
-				<p class="text-sm mt-1">Add courses to see your schedule visualization</p>
+				<p class="mt-1 text-sm">Add courses to see your schedule visualization</p>
 			</div>
 		{:else}
 			<WeeklyTimeGrid entries={schedule.entries} />
@@ -203,8 +205,12 @@
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<h2 class="text-lg font-semibold">Courses ({schedule.entries.length})</h2>
-			<Button size="sm" onclick={() => (addDialogOpen = true)} disabled={availableCourses().length === 0}>
-				<PlusIcon class="h-4 w-4 mr-1" />
+			<Button
+				size="sm"
+				onclick={() => (addDialogOpen = true)}
+				disabled={availableCourses().length === 0}
+			>
+				<PlusIcon class="mr-1 h-4 w-4" />
 				Add Course
 			</Button>
 		</div>
@@ -214,17 +220,18 @@
 				class="rounded-lg border border-destructive bg-destructive/10 p-3 text-sm text-destructive"
 			>
 				<p class="font-semibold">⚠️ Schedule Conflicts Detected</p>
-				<p class="text-xs mt-1">{conflicts.length} time conflict(s) in your schedule</p>
+				<p class="mt-1 text-xs">{conflicts.length} time conflict(s) in your schedule</p>
 			</div>
 		{/if}
 
 		{#if schedule.entries.length === 0}
 			<div class="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
 				<p>No courses added yet</p>
-				<p class="text-sm mt-1">Click "Add Course" to get started</p>
+				<p class="mt-1 text-sm">Click "Add Course" to get started</p>
 				{#if selectedCourses.length === 0}
-					<p class="text-xs mt-2">
-						Go to <a href="/" class="text-primary hover:underline">Catalog</a> to select courses first
+					<p class="mt-2 text-xs">
+						Go to <a href="/" class="text-primary hover:underline">Catalog</a> to select courses
+						first
 					</p>
 				{/if}
 			</div>

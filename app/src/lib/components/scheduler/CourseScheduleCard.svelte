@@ -51,7 +51,9 @@
 	</div>
 
 	{#if hasConflict}
-		<div class="mb-3 rounded border border-destructive bg-destructive/10 p-2 text-xs text-destructive">
+		<div
+			class="mb-3 rounded border border-destructive bg-destructive/10 p-2 text-xs text-destructive"
+		>
 			⚠️ This course has a time conflict with another course in your schedule
 		</div>
 	{/if}

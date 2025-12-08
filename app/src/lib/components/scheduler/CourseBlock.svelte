@@ -22,16 +22,16 @@
 </script>
 
 <div
-	class="absolute left-0 right-0 rounded p-1 text-xs text-white shadow-sm transition-all hover:shadow-md hover:z-10"
+	class="absolute right-0 left-0 rounded p-1 text-xs text-white shadow-sm transition-all hover:z-10 hover:shadow-md"
 	style="top: {topPercent}%; height: {heightPercent}%; background-color: {entry.color}; opacity: 0.9;"
 	title="{entry.courseCatalogNumber}: {entry.courseTitle}\n{formatTime(startTime)} - {formatTime(
 		endTime
 	)}"
 >
 	{#if !compact}
-		<div class="font-semibold truncate">{entry.courseCatalogNumber}</div>
-		<div class="text-[10px] truncate opacity-90">{formatTime(startTime)}</div>
+		<div class="truncate font-semibold">{entry.courseCatalogNumber}</div>
+		<div class="truncate text-[10px] opacity-90">{formatTime(startTime)}</div>
 	{:else}
-		<div class="text-[10px] font-medium truncate">{entry.courseCatalogNumber}</div>
+		<div class="truncate text-[10px] font-medium">{entry.courseCatalogNumber}</div>
 	{/if}
 </div>

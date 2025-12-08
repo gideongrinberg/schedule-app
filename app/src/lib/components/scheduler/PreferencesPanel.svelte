@@ -60,7 +60,7 @@
 
 <div class="space-y-6 rounded-lg border bg-card p-6">
 	<div>
-		<h3 class="text-lg font-semibold mb-2">Schedule Preferences</h3>
+		<h3 class="mb-2 text-lg font-semibold">Schedule Preferences</h3>
 		<p class="text-sm text-muted-foreground">
 			Configure your preferences to generate optimized schedules
 		</p>
@@ -77,11 +77,13 @@
 			<div class="grid gap-1.5 leading-none">
 				<Label
 					for="minimize-gaps"
-					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 				>
 					Minimize gaps between classes
 				</Label>
-				<p class="text-xs text-muted-foreground">Prefer back-to-back classes with fewer breaks</p>
+				<p class="text-xs text-muted-foreground">
+					Prefer back-to-back classes with fewer breaks
+				</p>
 			</div>
 		</div>
 
@@ -95,7 +97,7 @@
 			<div class="grid gap-1.5 leading-none">
 				<Label
 					for="avoid-early"
-					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 				>
 					Avoid early morning classes
 				</Label>
@@ -113,7 +115,7 @@
 			<div class="grid gap-1.5 leading-none">
 				<Label
 					for="maximize-free-days"
-					class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 				>
 					Maximize free days
 				</Label>
@@ -126,37 +128,44 @@
 			<div class="flex items-start space-x-3">
 				<Checkbox.Root
 					checked={preferences.preferredInstructorsEnabled}
-					onCheckedChange={(checked) => updatePreference('preferredInstructorsEnabled', checked)}
+					onCheckedChange={(checked) =>
+						updatePreference('preferredInstructorsEnabled', checked)}
 					id="prefer-instructors"
 				/>
 				<div class="grid gap-1.5 leading-none">
 					<Label
 						for="prefer-instructors"
-						class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+						class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 					>
 						Prefer certain instructors
 					</Label>
-					<p class="text-xs text-muted-foreground">Prioritize sections taught by selected instructors</p>
+					<p class="text-xs text-muted-foreground">
+						Prioritize sections taught by selected instructors
+					</p>
 				</div>
 			</div>
 
 			{#if preferences.preferredInstructorsEnabled}
-				<div class="ml-7 space-y-2 rounded-md border p-3 bg-muted/50">
+				<div class="ml-7 space-y-2 rounded-md border bg-muted/50 p-3">
 					{#if allInstructors().length === 0}
-						<p class="text-xs text-muted-foreground">Add courses to your schedule to select instructors</p>
+						<p class="text-xs text-muted-foreground">
+							Add courses to your schedule to select instructors
+						</p>
 					{:else}
-						<p class="text-xs font-medium mb-2">Select preferred instructors:</p>
-						<div class="space-y-2 max-h-48 overflow-y-auto">
+						<p class="mb-2 text-xs font-medium">Select preferred instructors:</p>
+						<div class="max-h-48 space-y-2 overflow-y-auto">
 							{#each allInstructors() as instructor (instructor)}
 								<div class="flex items-center space-x-2">
 									<Checkbox.Root
-										checked={preferences.preferredInstructors.includes(instructor)}
+										checked={preferences.preferredInstructors.includes(
+											instructor
+										)}
 										onCheckedChange={() => toggleInstructor(instructor)}
 										id="instructor-{instructor}"
 									/>
 									<Label
 										for="instructor-{instructor}"
-										class="text-xs font-normal cursor-pointer"
+										class="cursor-pointer text-xs font-normal"
 									>
 										{instructor}
 									</Label>
