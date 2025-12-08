@@ -13,7 +13,7 @@
 		We source our data from Workday and the Registrar's website automatically. The data is
 		updated at least every 24 hours, and more frequently around the registration period. If you
 		find a mistake in course information, such as missing or incorrect courses, please
-		<a href="/contact" class="text-blue-600 hover:underline">report it</a>. While it would be
+		<a href="/about/contact" class="text-blue-600 hover:underline">report it</a>. While it would be
 		great to add more information about, for example, prerequisites or course reviews, the
 		university makes very little available.
 	</p>

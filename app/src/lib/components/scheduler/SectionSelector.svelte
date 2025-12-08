@@ -53,11 +53,13 @@
 	<label for="section-selector-{label}" class="text-sm font-medium">{label}</label>
 	<Select.Root type="single" bind:value={selectedValue}>
 		<Select.Trigger class="w-full" id="section-selector-{label}">
-			{#if selectedSection}
-				{formatSectionDisplay(selectedSection)}
-			{:else}
-				Select section
-			{/if}
+			<span class="block truncate text-left" title={selectedSection ? formatSectionDisplay(selectedSection) : ''}>
+				{#if selectedSection}
+					{formatSectionDisplay(selectedSection)}
+				{:else}
+					Select section
+				{/if}
+			</span>
 		</Select.Trigger>
 		<Select.Content class="max-h-80">
 			{#each sections as section (section.id)}
