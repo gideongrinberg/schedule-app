@@ -92,15 +92,9 @@
 					<Command.Empty>{emptyMessage}</Command.Empty>
 					<Command.Group>
 						{#each items as item (item)}
-							<Command.Item
-								value={item}
-								onSelect={() => handleSelect(item)}
-							>
+							<Command.Item value={item} onSelect={() => handleSelect(item)}>
 								<CheckIcon
-									class={cn(
-										'mr-2 h-4 w-4',
-										value !== item && 'text-transparent'
-									)}
+									class={cn('mr-2 h-4 w-4', value !== item && 'text-transparent')}
 								/>
 								{item}
 							</Command.Item>

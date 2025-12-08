@@ -51,10 +51,11 @@
 				class="border px-3 py-1"
 				onclick={(e: Event) => {
 					e.stopPropagation();
-					const idx = selectedCourses.findIndex((c) =>
-						c.id === course.id &&
-						c.catalogNumber === course.catalogNumber &&
-						c.department === course.department
+					const idx = selectedCourses.findIndex(
+						(c) =>
+							c.id === course.id &&
+							c.catalogNumber === course.catalogNumber &&
+							c.department === course.department
 					);
 					if (idx !== -1) selectedCourses.splice(idx, 1);
 				}}>Remove Course</Button

@@ -106,10 +106,7 @@
 		if (selectedInstructors.length > 0) {
 			courses = courses.filter((course) => {
 				// Check both lecture and lab sections
-				const allSections = [
-					...course.sections.lecture,
-					...(course.sections.lab || [])
-				];
+				const allSections = [...course.sections.lecture, ...(course.sections.lab || [])];
 				return allSections.some((section) =>
 					section.instructor.some((instructor) =>
 						selectedInstructors.includes(instructor)
@@ -127,10 +124,7 @@
 		// Apply open courses filter
 		if (openCoursesOnly) {
 			courses = courses.filter((course) => {
-				const allSections = [
-					...course.sections.lecture,
-					...(course.sections.lab || [])
-				];
+				const allSections = [...course.sections.lecture, ...(course.sections.lab || [])];
 				return allSections.some(
 					(section) => section.seats && section.seats[1] > section.seats[0]
 				);
@@ -171,6 +165,15 @@
 
 	// Helper function to format time
 	function formatTime(minutes: number): string {
+		if (minutes > 1440) {
+			const wrapped = minutes % 1440;
+			const hours = Math.floor(wrapped / 60);
+			const mins = wrapped % 60;
+			const period = hours >= 12 ? 'PM' : 'AM';
+			const displayHours = hours % 12 || 12;
+			return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}⁺`;
+		}
+
 		const hours = Math.floor(minutes / 60);
 		const mins = minutes % 60;
 		const period = hours >= 12 ? 'PM' : 'AM';
@@ -371,8 +374,8 @@
 						<CourseCard
 							{course}
 							selected={selectedCourse?.id === course.id &&
-							          selectedCourse?.catalogNumber === course.catalogNumber &&
-							          selectedCourse?.department === course.department}
+								selectedCourse?.catalogNumber === course.catalogNumber &&
+								selectedCourse?.department === course.department}
 							onclick={() => selectCourse(course)}
 						/>
 					{/each}
