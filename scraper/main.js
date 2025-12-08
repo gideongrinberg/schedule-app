@@ -99,7 +99,7 @@ const parseCatalog = (html, school) => {
                     const [h, m] = timestr.split(":");
                     let time = parseInt(h) * 60 + parseInt(m);
                     if (ampm == "PM") {
-                        time += 60;
+                        time += 60*12;
                     }
 
                     return time;
