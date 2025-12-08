@@ -64,7 +64,7 @@
 					{/if}
 				</div>
 			{:else}
-				{#each filteredCourses() as course (course.id)}
+				{#each filteredCourses() as course, index (course.id || `${course.catalogNumber}-${course.department}-${index}`)}
 					<div
 						class="flex items-start justify-between gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent"
 					>

@@ -4,6 +4,15 @@
  * @returns Formatted time string (e.g., "10:00 AM")
  */
 export function formatTime(minutes: number): string {
+	if (minutes > 1440) {
+		const wrapped = minutes % 1440;
+		const hours = Math.floor(wrapped / 60);
+		const mins = wrapped % 60;
+		const period = hours >= 12 ? 'PM' : 'AM';
+		const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+		return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}⁺`;
+	}
+
 	const hours = Math.floor(minutes / 60);
 	const mins = minutes % 60;
 
