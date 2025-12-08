@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as cheerio from "cheerio";
+import { randomUUID } from "crypto";
 
 /**
  * Parses an HTML course catalog page into list of JS objects.
@@ -11,7 +12,7 @@ const parseCatalog = (html, school) => {
     $(".scpi__classes--row").each((_, courseEl) => {
         const $course = $(courseEl);
         const course = {
-            id: $course.attr("data-course-id") || "",
+            id: $course.attr("data-course-id") || undefined,
             // The registrar's site labels courses outside of any of the schools
             // such as ROTC and Beyond Boundaries "WUSTL." These are more accurately
             // called "Other."
@@ -33,6 +34,10 @@ const parseCatalog = (html, school) => {
                 .trim(),
             level: $course.find(".scpi-class__details--title").text().trim(),
         };
+
+        if(course.id === undefined) {
+            course.id = randomUUID()
+        }
 
         if (course.units.startsWith("Variable")) {
             course.units = null;
